@@ -10,7 +10,16 @@
 PLUGIN_LYRICS: 1
 PLUGIN_FETCHCOVER: 1
 PLUGIN_AUTOSAVE: 1
+PLUGIN_ARTISTINFO: 1
 PLUGIN_MPRIS2: 1
+
+UseTray: 0
+
+Layout: Shimmer Desktop
+IconTheme: elementary
+LayoutT: Shimmer Traytip
+LayoutF: Shimmer Party
+
 
 # default player layout
 #Layout: Small player

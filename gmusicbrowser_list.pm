@@ -196,8 +196,8 @@ sub Update
 	if (!$array)	{ $tip=$text=_"error"; }
 	else		{ $text.= ::CalcListLength($array,$self->{format}); }
 	my $format= $self->{size} ? '<span size="'.$self->{size}.'">%s</span>' : '%s';
-	$self->child->set_markup_with_format($format,$text);
-	$self->set_tooltip_text($tip);
+	if ($self->{mode} eq "filter") { $self->child->set_markup_with_format($format,$text); $self->set_tooltip_text($tip); }
+	else	{	$self->child->set_markup_with_format($format,$tip); $self->set_tooltip_text($text); }
 	$self->{needupdate}=0;
 }
 
@@ -225,7 +225,7 @@ sub filter_Update
 {	my $self=shift;
 	my $filter=::GetFilter($self);
 	my $array=$filter->filter;
-	return _("Filter : "), $array, $filter->explain;
+	return _("Filter : "), $array, ("Filter: ".$filter->explain);
 }
 
 ### list functions
@@ -244,7 +244,7 @@ sub list_SongArray_changed
 sub list_Update
 {	my $self=shift;
 	my $array=::GetSongArray($self) || return;
-	return _("Listed : "), $array,  ::__n('%d song','%d songs',scalar@$array);
+	return _("Listed : "), $array,  ::__n('%d song listed','%d songs listed',scalar@$array);
 }
 
 ### selected functions
@@ -1593,6 +1593,7 @@ our %Pages=
 our @MenuMarkupOptions=
 (	"%a",
 	"<b>%a</b>%Y\n<small>%s <small>%l</small></small>",
+	"<b>%a</b>%Y\n<small>%x / %s / <small>%l</small></small>",
 	"<b>%a</b>%Y\n<small>%b</small>",
 	"<b>%a</b>%Y\n<small>%b</small>\n<small>%s <small>%l</small></small>",
 	"<b>%y %a</b>",
@@ -1609,6 +1610,7 @@ my @mpicsize_menu=
 	_("medium size")	=> 64,
 	_("big size")		=> 96,
 	_("huge size")		=> 128,
+	_("giant size")		=> 256,
 );
 my @cloudstats_menu=
 (	_("number of songs")	=> 'count',
@@ -3421,7 +3423,7 @@ sub new
 		my $BAlblist=::NewIconButton('gmb-playlist',undef,undef,'none');
 		$BAlblist->signal_connect(button_press_event => \&AlbumListButton_press_cb);
 		$BAlblist->set_tooltip_text(_"Choose Album From this Artist");
-		$buttonbox->pack_start($BAlblist, ::FALSE, ::FALSE, 0);
+		$buttonbox->pack_start($_, ::FALSE, ::FALSE, 0) for $BAlblist;
 	}
 
 	my $drgsrc=$aa eq 'album' ? ::DRAG_ALBUM : ::DRAG_ARTIST;
@@ -4763,6 +4765,16 @@ sub button_press_cb
 		else	{ $self->{pressed}=1; }
 		return 0;
 	}
+	if ($but==2)
+	{	my ($i,$j,$key)=$self->coord_to_index($event->get_coords);
+		if (defined $key && !exists $self->{selected}{$key})
+		{	$self->key_selected($event,$i,$j);
+		}
+		my $menu = ::ChooseSongsFromA($key);
+		my $event = Gtk2->get_current_event;
+		$menu->show_all;
+		$menu->popup(undef,undef,undef,undef,$event->button,$event->time);
+	}
 	if ($but==3)
 	{	my ($i,$j,$key)=$self->coord_to_index($event->get_coords);
 		if (defined $key && !exists $self->{selected}{$key})
@@ -5686,7 +5698,7 @@ sub new
 	my $default= $::Options{"DefaultOptions_$name"} || {};
 
 	%$opt=( @DefaultOptions, %$default, %$opt );
-	$self->{$_}=$opt->{$_} for qw/headclick songxpad songypad no_typeahead grouping/;
+	$self->{$_}=$opt->{$_} for qw/headclick songxpad songypad no_typeahead grouping showbb/;
 
 	#create widgets used to draw the songtree as a treeview, would be nice to do without but it's not possible currently
 	$self->{stylewidget}=Gtk2::TreeView->new;
@@ -5749,6 +5761,16 @@ sub new
 	$self->AddColumn($_) for split / +/,$opt->{cols};
 	unless ($self->{cells}) { $self->AddColumn('title'); } #to ensure there is at least 1 column
 
+	if ($self->{showbb}) { # show queue actions in QueueList if option showbb is set
+		my $qactions = Layout::NewWidget("QueueActions");
+		my $clearb = ::NewIconButton('gtk-clear',"",\&::ClearQueue,"none","Clear Queue");
+		my $shuffleb = ::NewIconButton('gmb-shuffle',"",\&::ShuffleQueue,"none","Shuffle Queue");
+		my $bbox = Gtk2::HBox->new(0,0);
+		$bbox->pack_start($qactions,0,0,0);
+		$bbox->pack_end($clearb,0,0,0);
+		$bbox->pack_end($shuffleb,0,0,0);
+		$vbox->pack_end($bbox,0,0,0);
+	}
 	$self->{selected}='';
 	$self->{lastclick}=$self->{startgrow}=-1;
 	$self->set_head_columns;
