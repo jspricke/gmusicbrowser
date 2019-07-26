@@ -710,7 +710,7 @@ sub update_selection
 			{	$treesel->select_iter($iter);
 				last;
 			}
-			$iter=$store->iter_next($iter);
+			$store->iter_next($iter);
 		}
 	}
 	$editbox->{busy}=0;

@@ -2860,9 +2860,9 @@ sub PrefFields	#preference dialog for fields
 		{	my $child= $store->iter_children($parent);
 			while ($child)
 			{	if ($store->get($child,1) eq $field) { $treeview->set_cursor($store->get_path($child)); return; }
-				$child= $store->iter_next($child);
+				$store->iter_next($child);
 			}
-			$parent= $store->iter_next($parent);
+			$store->iter_next($parent);
 		}
 	};
 
@@ -4250,7 +4250,7 @@ sub update
 	return unless defined $value;
 	my $store=$self->get_model;
 	$self->{busy}=1;
-	for (my $iter=$store->get_iter_first; $iter; $iter=$store->iter_next($iter))
+	for (my $iter=$store->get_iter_first; $iter; $store->iter_next($iter))
 	{	$self->set_active_iter($iter),last if $store->get($iter,0) eq $value;
 	}
 	delete $self->{busy};

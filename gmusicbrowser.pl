@@ -6487,7 +6487,7 @@ sub PrefPlugins
 		my $iter= $store->get_iter_first;
 		while ($iter)
 		{	if (lc($store->get($iter,0)) eq lc$plugin) { $treeview->set_cursor($store->get_path($iter)); last; }
-			$iter=$store->iter_next($iter);
+			$store->iter_next($iter);
 		}
 	};
 
@@ -8376,14 +8376,16 @@ sub Result
 		else
 		{	$filter.= $elem."\x1D";
 			last unless $depth;
-			$next=$store->iter_next($iter);
+			$next=$iter->copy;
+			$store->iter_next($next);
 		}
 		until ($next)
 		{	last unless $depth and $iter=$store->iter_parent($iter);
 			$filter.=")\x1D"  unless $store->iter_n_children($iter)<2;
 			$depth--;
 			last unless $depth;
-			$next=$store->iter_next($iter);
+			$next=$iter->copy;
+			$store->iter_next($next);
 		}
 	}
 	warn "filter= $filter\n" if $::debug;
@@ -8600,7 +8602,8 @@ sub Result
 		$order.='-' if $o eq 'gtk-sort-descending';
 		$order.=$f;
 		$order.=':i' if $i==INSENSITIVE;
-		$order.=' ' if $iter=$store->iter_next($iter);
+		$store->iter_next($iter);
+		$order.=' ' if $iter;
 	}
 	return $order;
 }
@@ -9755,7 +9758,7 @@ sub set_value
 #	my $iter=$store->get_iter_first;
 #	while ($iter)
 #	{	$self->set_active_iter($iter) if $store->get($iter,1) eq $value;
-#		$iter=$store->iter_next($iter);
+#		$store->iter_next($iter);
 #	}
 #}
 sub get_value
@@ -9786,7 +9789,7 @@ sub make_toolitem
 			{	return if $_[0]->parent->{busy};
 				$self->set_value( $_[0]{value} );
 			});
-		$iter=$store->iter_next($iter);
+		$store->iter_next($iter);
 	}
 	$self->signal_connect(changed => sub
 	{	$menu->{busy}=1;
@@ -9902,7 +9905,7 @@ sub set_value
 		if ( defined $v && $value->are_equal($v) )
 		{	$founditer=$iter; last;
 		}
-		$iter=$store->iter_next($iter);
+		$store->iter_next($iter);
 	}
 	unless ($founditer)
 	{	$founditer= $store->prepend;

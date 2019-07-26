@@ -2425,7 +2425,10 @@ sub get_selected_list
 		{	my $iter= $store->get_iter_first;	# this iter is "All row" -> not added
 			# "all row" is selected, replace iters list by list of all iters of first depth
 			@iters=();
-			push @iters,$iter while $iter=$store->iter_next($iter);
+			while ($iter) {
+				push @iters,$iter;
+				$store->iter_next($iter);
+			}
 			last unless @iters;
 		}
 		my $depth=$store->iter_depth($iters[0]);
@@ -2479,7 +2482,7 @@ sub row_expanded_cb
 	while (my $iter=$store->iter_nth_child($piter,$#$children+1)) { $store->remove($iter) }
 
 	if ($depth<$self->{depth}-1)	#make sure every child has a child if $depth not the deepest
-	{	for (my $iter=$store->iter_children($piter); $iter; $iter=$store->iter_next($iter) )
+	{	for (my $iter=$store->iter_children($piter); $iter; $store->iter_next($iter) )
 		{	$store->append($iter) unless $store->iter_children($iter);
 		}
 	}
@@ -2550,8 +2553,8 @@ sub Fill
 
 		if ($self->{field}[1]) # add a children to every row
 		{	my $first=$store->get_iter_first;
-			$first=$store->iter_next($first) if $first && $store->get($first,0)==GID_ALL; #skip "all" row
-			for (my $iter=$first; $iter; $iter=$store->iter_next($iter))
+			$store->iter_next($first) if $first && $store->get($first,0)==GID_ALL; #skip "all" row
+			for (my $iter=$first; $iter; $store->iter_next($iter))
 			{	$store->append($iter);
 			}
 		}
@@ -2880,7 +2883,7 @@ sub Fill
 		$iter=$store->iter_children($iter);
 		while ($iter)
 		{	last if $folder eq $store->get($iter,0);
-			$iter=$store->iter_next($iter);
+			$store->iter_next($iter);
 			$treepath=$store->get_path($iter);
 		}
 		last unless $iter;
@@ -2974,10 +2977,11 @@ sub refresh_path
 	{	$dir= ::url_escape($dir);
 		while ($iter)
 		{	my $c= $dir cmp $store->get($iter,0);
-			unless ($c) { $iter=$store->iter_next($iter); next NEXTDIR; } #folder already there
+			unless ($c) { $store->iter_next($iter); next NEXTDIR; } #folder already there
 			last if $c<0;
 			# there should be no subfolders before => remove them
-			my $iter2=$store->iter_next($iter);
+			my $iter2=$iter->copy;
+			$store->iter_next($iter2);
 			$store->remove($iter);
 			$iter=$iter2;
 		}
@@ -2988,7 +2992,8 @@ sub refresh_path
 		$store->set($dummy,0,"",1,0); #add dummy child
 	}
 	while ($iter) #no more subfolders => remove any trailing folders
-	{	my $iter2=$store->iter_next($iter);
+	{	my $iter2=$iter->copy;
+		$iter2=$store->iter_next($iter2);
 		$store->remove($iter);
 		$iter=$iter2;
 	}
@@ -3301,7 +3306,7 @@ sub CreateNewFL
 	$iter=$store->iter_children($iter);
 	while ($iter)
 	{	last if $store->get($iter,0) eq $name;
-		$iter=$store->iter_next($iter);
+		$store->iter_next($iter);
 	}
 	return unless $iter;
 	my $path=$store->get_path($iter);

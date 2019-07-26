@@ -822,7 +822,7 @@ sub entry_changed
 			{	$selection->select_iter($iter);
 				last;
 			}
-			$iter=$store->iter_next($iter);
+			$store->iter_next($iter);
 		}
 	}
 	$self->{add_button}->set_sensitive( length $text );

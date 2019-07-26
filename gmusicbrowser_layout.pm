@@ -4805,7 +4805,7 @@ sub update_selection
 			$treeview->scroll_to_cell($store->get_path($iter),undef,::FALSE,0,0); #scroll to row if needed
 			last;
 		}
-		$iter= $store->iter_next($iter);
+		$store->iter_next($iter);
 	}
 	delete $self->{busy};
 }
