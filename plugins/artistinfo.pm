@@ -536,7 +536,7 @@ sub loaded
 	my $tag_warning = $buffer->create_tag(undef,foreground=>"#bf6161",justification=>'center',underline=>'single');
 	my $tag_extra = $buffer->create_tag(undef,foreground_gdk=>$self->style->text_aa("normal"),justification=>'left');
 	my $tag_noresults=$buffer->create_tag(undef,justification=>'center',font=>$fontsize*2,foreground_gdk=>$self->style->text_aa("normal"));
-	my $tag_header = $buffer->create_tag(undef,justification=>'left',font=>$fontsize+1,weight=>Pango::PANGO_WEIGHT_BOLD);
+	my $tag_header = $buffer->create_tag(undef,justification=>'left',font=>$fontsize+1,weight=>Pango::Weight->bold);
 	my $infoheader;
 
 	if ($self->{site} eq "biography") {
@@ -638,7 +638,7 @@ sub load_file
 	}
 	my $fontsize=$self->{fontsize};
 	my $href = $buffer->create_tag(undef,justification=>'left',foreground=>"#4ba3d2",underline=>'single');
-	my $tag_header = $buffer->create_tag(undef,justification=>'left',font=>$fontsize+1,weight=>Pango::PANGO_WEIGHT_BOLD);
+	my $tag_header = $buffer->create_tag(undef,justification=>'left',font=>$fontsize+1,weight=>Pango::Pango::Weight->bold);
 	my ($infoheader,$url);
 	if ($text =~ m/<title>(.*?)<\/title>(.*?)<url>(.*?)<\/url>/s) {
 		$infoheader = $1; $url = $3; $text = $2;

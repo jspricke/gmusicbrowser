@@ -24,7 +24,7 @@ binmode STDOUT,':utf8';
 package main;
 use Gtk3 '-init';
 use Glib qw/filename_from_unicode filename_to_unicode/;
-use Pango; #for PANGO_WEIGHT_BOLD, PANGO_WEIGHT_NORMAL
+use Pango; #for Pango::Weight->bold, Pango::Weight->normal
 use POSIX qw/setlocale LC_NUMERIC LC_MESSAGES LC_TIME strftime mktime getcwd _exit/;
 use Encode qw/_utf8_on _utf8_off/;
 {no warnings 'redefine'; #some work arounds for old versions of perl-Gtk3 and/or gtk2
@@ -6280,7 +6280,7 @@ sub PrefKeys
 		{	my ($cmd,$arg)=  $list->{$key}=~m/^(\w+)(?:\((.*)\))?$/;
 			$cmd=$Command{$cmd}[1];
 			$cmd.="($arg)" if defined $arg;
-			my $weight= $key=~s/^\+// ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL;
+			my $weight= $key=~s/^\+// ? Pango::Weight->bold : Pango::Weight->normal;
 			my $longkey=keybinding_longname($key);
 			$store->set($store->append, 0,$longkey, 1,$cmd, 2,$key, 3,$weight);
 		}

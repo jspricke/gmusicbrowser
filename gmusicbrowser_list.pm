@@ -754,7 +754,7 @@ sub EditRowTip
 
 package SongList;
 use Glib qw(TRUE FALSE);
-use Pango; #for PANGO_WEIGHT_BOLD, PANGO_WEIGHT_NORMAL
+use Pango; #for Pango::Weight->bold, Pango::Weight->normal
 use base 'Gtk3::ScrolledWindow';
 
 our @ISA;
@@ -778,7 +778,7 @@ INIT
 	boldrow =>
 	{	value => sub
 		{	defined $::SongID && $_[2]==$::SongID && (!$_[0]{is_playlist} || !defined $::Position || $::Position==$_[1]) ?
-				PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL;
+				Pango::Weight->bold : Pango::Weight->normal;
 		},
 		attrib => 'weight',	type => 'Glib::Uint',
 	},
@@ -8278,7 +8278,7 @@ sub set_cell_data_cb
 	my $song=$::Songs[$ID];
 	my $text=	$column->{field} eq 'title' ? $song->[::SONG_TITLE] :
 			$column->{field} eq 'url'   ? $song->[::SONG_UPATH].'/'.$song->[::SONG_UFILE] : '';
-	my $w= (defined $::SongID && $::SongID==$ID) ? Pango::PANGO_WEIGHT_BOLD : Pango::PANGO_WEIGHT_NORMAL;
+	my $w= (defined $::SongID && $::SongID==$ID) ? Pango::Pango::Weight->bold : Pango::Pango::Weight->normal;
 	$cell->set(text => $text);
 	$cell->set(weight => $w);
 }

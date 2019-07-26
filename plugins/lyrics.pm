@@ -510,7 +510,7 @@ sub loaded #_very_ crude html to gtktextview renderer
 				}
 			elsif ($tag=~m/^h(\d)/i)
 				{ $prop{scale}=(3,2.5,2,1.5,1.2,1,.66)[$1];
-				  $prop{weight}=Pango::PANGO_WEIGHT_BOLD if $1 eq '1';
+				  $prop{weight}=Pango::Pango::Weight->bold if $1 eq '1';
 				}
 			elsif ($tag eq 'table') {$buffer->insert($iter,"\n");}
 			elsif ($tag eq 'img' && exists $p{src})
@@ -534,7 +534,7 @@ sub loaded #_very_ crude html to gtktextview renderer
 		}
 		elsif (m#^<(\w+)>$#)
 		{	if    ($1 eq 'u')	{$prop{underline}='single';}
-			elsif ($1 eq 'b')	{$prop{weight}=Pango::PANGO_WEIGHT_BOLD;}
+			elsif ($1 eq 'b')	{$prop{weight}=Pango::Pango::Weight->bold;}
 			elsif ($1 eq 'i')	{$prop{style}='italic';}
 			elsif ($1 eq 'title')	{$title=shift @l while $l[0] ne "</$1>"}
 		}
@@ -730,7 +730,7 @@ sub load_from_file
 	}
 	$artist='(?:by\W+)?'.$artist if $artist;
 	if ($text && $text=~m#^\W*($title\W*\n?(?:$artist)?)\W*\n#si)
-	{ my $tag=$buffer->create_tag(undef,scale => 1.5,weight=>Pango::PANGO_WEIGHT_BOLD);
+	{ my $tag=$buffer->create_tag(undef,scale => 1.5,weight=>Pango::Pango::Weight->bold);
 	  $buffer->apply_tag($tag,$buffer->get_iter_at_offset($-[0]),$buffer->get_iter_at_offset($+[0]));
 	}
 

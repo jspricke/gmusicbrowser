@@ -433,8 +433,8 @@ sub print_review {
 	my $fields = $self->{fields};
 	$buffer->set_text("");
 	my $fontsize = $self->{fontsize};
-	my $tag_h2 = $buffer->create_tag(undef, font=>$fontsize+1, weight=>Pango::PANGO_WEIGHT_BOLD);
-	my $tag_b  = $buffer->create_tag(undef, weight=>Pango::PANGO_WEIGHT_BOLD);
+	my $tag_h2 = $buffer->create_tag(undef, font=>$fontsize+1, weight=>Pango::Pango::Weight->bold);
+	my $tag_b  = $buffer->create_tag(undef, weight=>Pango::Pango::Weight->bold);
 	my $tag_i  = $buffer->create_tag(undef, style=>'italic');
 	my $iter = $buffer->get_start_iter();
 
