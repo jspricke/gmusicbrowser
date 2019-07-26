@@ -1899,7 +1899,8 @@ sub Resize
 	return unless defined $h;
 	my $screen=$self->get_screen;
 	my $monitor=$screen->get_monitor_at_window($self->get_window);
-	my (undef,undef,$monitorwidth,$monitorheight)=$screen->get_monitor_geometry($monitor)->values;
+	my $monitorwidth=$screen->get_monitor_geometry($monitor)->{'width'};
+	my $monitorheight=$screen->get_monitor_geometry($monitor)->{'height'};
 	$w= $1*$monitorwidth/100 if $w=~m/(\d+)%/;
 	$h= $1*$monitorheight/100 if $h=~m/(\d+)%/;
 	if ($self->{options}{DEFAULT_OPTIONS}) { $monitorwidth-=40; $monitorheight-=80; } # if using default layout size, reserve some space for potential panels and decorations #FIXME use gdk_screen_get_monitor_workarea once ported to gtk3
@@ -1934,7 +1935,10 @@ sub Position
 	if (!defined $monitor)
 	{	$monitor=$screen->get_monitor_at_window($self->window);
 	}
-	my ($xmin,$ymin,$monitorwidth,$monitorheight)=$screen->get_monitor_geometry($monitor)->values;
+	my $xmin=$screen->get_monitor_geometry($monitor)->{'x'};
+	my $ymin=$screen->get_monitor_geometry($monitor)->{'y'};
+	my $monitorwidth=$screen->get_monitor_geometry($monitor)->{'width'};
+	my $monitorheight=$screen->get_monitor_geometry($monitor)->{'height'};
 	$xalign= $x=~m/%/ ? 50 : 0   unless defined $xalign;
 	$yalign= $y=~m/%/ ? 50 : 0   unless defined $yalign;
 	$x= $monitorwidth*$1/100 if $x=~m/(-?\d+)%/;
@@ -5716,10 +5720,10 @@ sub size_allocate
 {	my ($self,$alloc)=@_;
 	my $vertical= $self->isa('Gtk3::VBox');
 	my $max_key= $vertical ? 'maxheight' : 'maxwidth';
-	my ($x,$y,$bwidth,$bheight)=$alloc->values;
-	my $olda=$self->allocation;
-	 $olda->x($x); $olda->y($y);
-	 $olda->width($bwidth); $olda->height($bheight);
+	my ($x,$y,$bwidth,$bheight)=($alloc->{'x'}, $alloc->{'y'}, $alloc->{'width'}, $alloc->{'height'});
+	my $olda=$self->get_allocation;
+	 $olda->{'x'} = $x; $olda->{'y'} = $y;
+	 $olda->{'width'} = $bwidth; $olda->{'height'} = $bheight;
 	($y,$x,$bheight,$bwidth)=($x,$y,$bwidth,$bheight) if $vertical;
 	my $border=$self->get_border_width;
 	$x+=$border;  $bwidth-=$border*2;
