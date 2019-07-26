@@ -15,14 +15,14 @@ desc	wikipedia, lyrics, and custom webpages
 
 my ($OKMoz,$OKWebKit,$CrashMoz);
 BEGIN
-{	{	last unless (grep -f $_.'/Gtk2/MozEmbed.pm',@INC);
+{	{	last unless (grep -f $_.'/Gtk3/MozEmbed.pm',@INC);
 		# test if mozembed is working
-		system(q(GNOME_DISABLE_CRASH_DIALOG=1 perl -e 'use Gtk2 "-init"; use Gtk2::MozEmbed;$w=Gtk2::Window->new;my $e=Gtk2::MozEmbed->new; $w->add($e);$w->show_all; exit 0')); #this segfault when mozembed doesn't find its libs
+		system(q(GNOME_DISABLE_CRASH_DIALOG=1 perl -e 'use Gtk3 "-init"; use Gtk3::MozEmbed;$w=Gtk3::Window->new;my $e=Gtk3::MozEmbed->new; $w->add($e);$w->show_all; exit 0')); #this segfault when mozembed doesn't find its libs
 		#if (($? & 127) ==11) {die "Error : mozembed libraries not found. You need to add the mozilla path in /etc/ld.so.conf and run ldconfig (as root) or add the mozilla libraries path to the LD_LIBRARY_PATH environment variable.\n"}
-		if ($?) { warn "Gtk2::MozEmbed found but not working.\n"; $CrashMoz=1; last; } #crash or fail to load
+		if ($?) { warn "Gtk3::MozEmbed found but not working.\n"; $CrashMoz=1; last; } #crash or fail to load
 		$OKMoz=1;
 	}
-	$OKWebKit=1 if grep -f $_.'/Gtk2/WebKit.pm',@INC;
+	$OKWebKit=1 if grep -f $_.'/Gtk3/WebKit.pm',@INC;
 }
 
 use strict;
@@ -30,17 +30,17 @@ use warnings;
 use utf8;
 
 package GMB::Plugin::WebContext::MozEmbed;
-#use Gtk2::MozEmbed;
+#use Gtk3::MozEmbed;
 
 our $Embed;
 sub init
-{	Gtk2::MozEmbed->set_profile_path ($::HomeDir,'mozilla_profile');
-	if ($Gtk2::MozEmbed::VERSION>=0.06) {Gtk2::MozEmbed->push_startup}
-	else {$Embed||=Gtk2::MozEmbed->new;} #needed to keep a Gtk2::MozEmbed to prevent xpcom from shutting down with the last gtkmozembed
+{	Gtk3::MozEmbed->set_profile_path ($::HomeDir,'mozilla_profile');
+	if ($Gtk3::MozEmbed::VERSION>=0.06) {Gtk3::MozEmbed->push_startup}
+	else {$Embed||=Gtk3::MozEmbed->new;} #needed to keep a Gtk3::MozEmbed to prevent xpcom from shutting down with the last gtkmozembed
 }
 
 sub new_embed
-{	my $embed=Gtk2::MozEmbed->new;
+{	my $embed=Gtk3::MozEmbed->new;
 	$embed->signal_connect(link_message => \&link_message_cb);
 	$embed->signal_connect(net_stop => \&net_startstop_cb,0);
 	$embed->signal_connect(net_start => \&net_startstop_cb,1);
@@ -60,7 +60,7 @@ sub net_startstop_cb
 	$self->{BStop}->set_sensitive( $loading );
 	$self->{BBack}->set_sensitive( $embed->can_go_back );
 	$self->{BNext}->set_sensitive( $embed->can_go_forward );
-	my $cursor= $loading ? Gtk2::Gdk::Cursor->new('watch') : undef;
+	my $cursor= $loading ? Gtk3::Gdk::Cursor->new('watch') : undef;
 	$embed->window->set_cursor($cursor) if $embed->window;
 }
 
@@ -105,10 +105,10 @@ sub set_stripped_wiki	#FIXME use print version of the wikipedia page instead ?
 }
 
 package GMB::Plugin::WebContext::WebKit;
-#use Gtk2::WebKit;
+#use Gtk3::WebKit;
 
 sub new_embed
-{	my $embed=Gtk2::WebKit::WebView->new;
+{	my $embed=Gtk3::WebKit::WebView->new;
 	$embed->signal_connect(hovering_over_link => \&link_message_cb);
 	$embed->signal_connect(load_finished => \&net_startstop_cb,0);
 	$embed->signal_connect(load_committed => \&net_startstop_cb,1);
@@ -125,7 +125,7 @@ sub new_embed
 		my $self=::find_ancestor($embed,'GMB::Plugin::WebContext');
 		$self->set_title($embed->get('title')) if $self;
 	 });
-	my $sw= Gtk2::ScrolledWindow->new;
+	my $sw= Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('etched-in');
 	$sw->set_policy('automatic','automatic');
 	$sw->add($embed);
@@ -144,7 +144,7 @@ sub net_startstop_cb
 	$self->{BStop}->set_sensitive( $loading );
 	$self->{BBack}->set_sensitive( $embed->can_go_back );
 	$self->{BNext}->set_sensitive( $embed->can_go_forward );
-	my $cursor= $loading ? Gtk2::Gdk::Cursor->new('watch') : undef;
+	my $cursor= $loading ? Gtk3::Gdk::Cursor->new('watch') : undef;
 	$embed->window->set_cursor($cursor) if $embed->window;
 	my $uri=$frame->get_uri;
 	$self->{Entry}->set_text($uri) if $loading;
@@ -174,7 +174,7 @@ sub set_stripped_wiki {}	#FIXME use print version of the wikipedia page instead 
 package GMB::Plugin::WebContext;
 our @ISA;
 BEGIN {push @ISA,'GMB::Context';}
-use base 'Gtk2::VBox';
+use base 'Gtk3::VBox';
 use constant
 {	OPT => 'PLUGIN_WebContext_',
 };
@@ -256,13 +256,13 @@ sub UpdateBackend
 	my $was_active=$active;
 	Stop() if $active;
 	if ($OKMoz && $backend eq 'MozEmbed')
-	{	require Gtk2::MozEmbed; Gtk2::MozEmbed->import;
+	{	require Gtk3::MozEmbed; Gtk3::MozEmbed->import;
 		GMB::Plugin::WebContext::MozEmbed::init();
 		@ISA= grep $_ ne 'GMB::Plugin::WebContext::WebKit', @ISA;
 		push @ISA, 'GMB::Plugin::WebContext::MozEmbed';
 	}
 	elsif ($OKWebKit)
-	{	require Gtk2::WebKit; Gtk2::WebKit->import;
+	{	require Gtk3::WebKit; Gtk3::WebKit->import;
 		@ISA= grep $_ ne 'GMB::Plugin::WebContext::MozEmbed', @ISA;
 		push @ISA, 'GMB::Plugin::WebContext::WebKit';
 	}
@@ -313,30 +313,30 @@ sub RemoveCustom
 
 sub new
 {	my ($class,$opt)=@_;
-	my $self = bless Gtk2::VBox->new(0,0), $class;
+	my $self = bless Gtk3::VBox->new(0,0), $class;
 	%$opt=( @default_options, %$opt );
 	$self->{$_}=$opt->{$_} for qw/follow group urientry statusbar baseurl/;
 
-	my $toolbar=Gtk2::Toolbar->new;
+	my $toolbar=Gtk3::Toolbar->new;
 	$toolbar->set_style( $opt->{ToolbarStyle}||'both-horiz' );
 	$toolbar->set_icon_size( $opt->{ToolbarSize}||'small-toolbar' );
-	my $status=$self->{Status}=Gtk2::Statusbar->new;
+	my $status=$self->{Status}=Gtk3::Statusbar->new;
 	$status->{id}=$status->get_context_id('link');
 	($self->{embed},my $container)= $self->new_embed;
 	$container||=$self->{embed};
 	$self->{DefaultFocus}=$self->{embed};
 	$self->{embed}->signal_connect(button_press_event=> \&button_press_cb);
-	my $entry=$self->{Entry}=Gtk2::Entry->new;
-	my $back= $self->{BBack}=Gtk2::ToolButton->new_from_stock('gtk-go-back');
-	my $next= $self->{BNext}=Gtk2::ToolButton->new_from_stock('gtk-go-forward');
-	my $stop= $self->{BStop}=Gtk2::ToolButton->new_from_stock('gtk-stop');
-	my $open= $self->{BOpen}=Gtk2::ToolButton->new_from_stock('gtk-open');
+	my $entry=$self->{Entry}=Gtk3::Entry->new;
+	my $back= $self->{BBack}=Gtk3::ToolButton->new_from_stock('gtk-go-back');
+	my $next= $self->{BNext}=Gtk3::ToolButton->new_from_stock('gtk-go-forward');
+	my $stop= $self->{BStop}=Gtk3::ToolButton->new_from_stock('gtk-stop');
+	my $open= $self->{BOpen}=Gtk3::ToolButton->new_from_stock('gtk-open');
 	$open->set_tooltip_text(_"Open this page in the web browser");
 	#$open->set_use_drag_window(1);
 	#::set_drag($open,source=>[::DRAG_FILE,sub {$embed->get_location;}]);
 	$self->{$_}->set_sensitive(0) for qw/BBack BNext BStop BOpen/;
 
-	my $entryitem=Gtk2::ToolItem->new;
+	my $entryitem=Gtk3::ToolItem->new;
 	$entryitem->add($entry);
 	$entryitem->set_expand(1);
 
@@ -374,10 +374,10 @@ sub addtoolbar #default method, overridden by packages that add extra items to t
 }
 
 sub prefbox
-{	my $vbox=Gtk2::VBox->new(::FALSE, 2);
+{	my $vbox=Gtk3::VBox->new(::FALSE, 2);
 	#my $combo=::NewPrefCombo(OPT.'Site',[sort keys %sites],'site : ',sub {$ID=undef;&Changed;});
 	my $check=::NewPrefCheckButton(OPT.'StrippedWiki',_"Strip wikipedia pages", cb=>\&set_stripped_wiki, tip=>_"Remove header, footer and left column from wikipedia pages");
-	my $Bopen=Gtk2::Button->new(_"open context window");
+	my $Bopen=Gtk3::Button->new(_"open context window");
 	$Bopen->signal_connect(clicked => sub { ::ContextWindow; });
 	my ($radio_wk,$radio_moz)=
 	 ::NewPrefRadio( OPT.'Backend',
@@ -391,7 +391,7 @@ sub prefbox
 	$radio_wk->set_sensitive($OKWebKit);
 	$radio_moz->set_sensitive($OKMoz);
 	$check->set_sensitive($::Options{OPT.'Backend'} eq 'MozEmbed');
-	$vbox->pack_start($_,::FALSE,::FALSE,1) for $radio_wk,$radio_moz,Gtk2::VSeparator->new,$check,$Bopen;
+	$vbox->pack_start($_,::FALSE,::FALSE,1) for $radio_wk,$radio_moz,Gtk3::VSeparator->new,$check,$Bopen;
 	$vbox->pack_start( GMB::Plugin::WebContext::Custom::Edition->new, ::TRUE,::TRUE,8 );
 	$vbox->set_sensitive( $OKMoz || $OKWebKit );
 	return $vbox;
@@ -440,7 +440,7 @@ sub DynamicTitle	#called by Layout::NoteBook when tab is created
 {	my ($self,$default)=@_;
 	my $title=$self->{title};
 	$title=$default unless length $title;
-	my $label=Gtk2::Label->new($title);
+	my $label=Gtk3::Label->new($title);
 	$label->set_ellipsize('end');
 	$label->set_max_width_chars(20);
 	$self->{titlelabel}=$label;
@@ -583,33 +583,33 @@ sub SongChanged
 
 
 package GMB::Plugin::WebContext::Custom::Edition;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 my $CustomPages= $::Options{GMB::Plugin::WebContext::OPT.'Custom'};
 
 sub new
 {	my $class=shift;
-	my $self=bless Gtk2::VBox->new, $class;
-	my $store=Gtk2::ListStore->new('Glib::String','Glib::String');
-	my $treeview=Gtk2::TreeView->new($store);
-	my $renderer=Gtk2::CellRendererText->new;
+	my $self=bless Gtk3::VBox->new, $class;
+	my $store=Gtk3::ListStore->new('Glib::String','Glib::String');
+	my $treeview=Gtk3::TreeView->new($store);
+	my $renderer=Gtk3::CellRendererText->new;
 	$renderer->set(editable => 1);
 	$renderer->signal_connect_swapped(edited => \&rename_cb,$store);
-	$treeview->append_column( Gtk2::TreeViewColumn->new_with_attributes( '', $renderer, text => 1 ));
+	$treeview->append_column( Gtk3::TreeViewColumn->new_with_attributes( '', $renderer, text => 1 ));
 	$treeview->set_headers_visible(::FALSE);
 	$treeview->get_selection->signal_connect(changed => \&selchanged_cb);
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('etched-in');
 	$sw->set_policy('automatic','automatic');
 	$sw->add($treeview);
-	my $hbox=Gtk2::HBox->new;
-	my $editbox=Gtk2::VBox->new;
+	my $hbox=Gtk3::HBox->new;
+	my $editbox=Gtk3::VBox->new;
 	$self->{editbox}=$editbox;
 	$self->{store}=$store;
 	$self->{treeview}=$treeview;
 	$hbox->pack_start($sw,::FALSE,::FALSE,2);
 	$hbox->add($editbox);
-	my $label=Gtk2::Label->new;
+	my $label=Gtk3::Label->new;
 	$label->set_markup_with_format('<b>%s</b>',_"Custom context pages :");
 	$label->set_alignment(0,.5);
 	$self->pack_start($label,::FALSE,::FALSE,2);
@@ -620,19 +620,19 @@ sub new
 	my $save=  ::NewIconButton('gtk-save',	_"Save");
 	my $remove=::NewIconButton('gtk-remove',_"Remove");
 	my $preset=::NewIconButton('gtk-add',	_"Pre-set");
-	$preset->child->add(Gtk2::Arrow->new('down','none'));
+	$preset->child->add(Gtk3::Arrow->new('down','none'));
 	$new	->signal_connect( clicked=> sub { my $self=::find_ancestor($_[0],__PACKAGE__); $self->fill_editbox; });
 	$save	->signal_connect( clicked=> \&save_cb);
 	$remove	->signal_connect( clicked=> \&remove_cb);
 	$preset ->signal_connect(button_press_event=>\&preset_menu_cb);
-	my $bbox=Gtk2::HButtonBox->new;
+	my $bbox=Gtk3::HButtonBox->new;
 	$bbox->set_layout('start');
 	$bbox->add($_) for $remove, $new, $preset, $save;
 	$self->pack_end($bbox,::FALSE,::FALSE,0);
 	$self->{button_save}=$save;
 	$self->{button_remove}=$remove;
 
-	my $sg=Gtk2::SizeGroup->new('horizontal');
+	my $sg=Gtk3::SizeGroup->new('horizontal');
 	$sg->add_widget($_) for $sw, $remove, $new, $preset, $save;
 
 	fill_list($self->{store});
@@ -652,8 +652,8 @@ sub fill_editbox		#if $id => fill entries with existing properties, if $hash => 
 	$editbox->remove($_) for $editbox->get_children;
 	$self->{button_save}  ->set_sensitive(defined $hash);
 	$self->{button_remove}->set_sensitive(defined $id);
-	$editbox->{entry_title}= my $entry_title=Gtk2::Entry->new;
-	$editbox->{entry_url}=   my $entry_url=  Gtk2::Entry->new;
+	$editbox->{entry_title}= my $entry_title=Gtk3::Entry->new;
+	$editbox->{entry_url}=   my $entry_url=  Gtk3::Entry->new;
 	$editbox->{id}=$id;
 	my $preview=Label::Preview->new
 	(	entry	=> $entry_url,	format => ::MarkupFormat('<small>%s</small>', _"example : %s"),
@@ -668,9 +668,9 @@ sub fill_editbox		#if $id => fill entries with existing properties, if $hash => 
 		$entry_title->set_text($hash->{tabtitle});
 		$entry_url  ->set_text($hash->{baseurl});
 	}
-	my $sg=Gtk2::SizeGroup->new('horizontal');
-	my $label_title=Gtk2::Label->new(_"Title");
-	my $label_url=Gtk2::Label->new(_"url");
+	my $sg=Gtk3::SizeGroup->new('horizontal');
+	my $label_title=Gtk3::Label->new(_"Title");
+	my $label_url=Gtk3::Label->new(_"url");
 	$sg->add_widget($_) for $label_title, $label_url;
 	my $box= ::Vpack( [$label_title,'_',$entry_title], [$label_url,'_',$entry_url], $preview );
 
@@ -760,11 +760,11 @@ sub save_cb
 sub preset_menu_cb
 {	my ($button,$event)=@_;
 	my $self=::find_ancestor($button,__PACKAGE__);
-	my $menu=Gtk2::Menu->new;
+	my $menu=Gtk3::Menu->new;
 	my $predef= \%GMB::Plugin::WebContext::Predefined;
 	my $menu_cb= sub { my $preid=$_[1]; $self->fill_editbox(undef,$predef->{$preid}); $self->update_selection; };
 	for my $preid ( ::sorted_keys($predef,'tabtitle') )
-	{	my $item=Gtk2::MenuItem->new( $predef->{$preid}{tabtitle} );
+	{	my $item=Gtk3::MenuItem->new( $predef->{$preid}{tabtitle} );
 		$item->signal_connect(activate => $menu_cb,$preid);
 		$menu->append($item);
 	}

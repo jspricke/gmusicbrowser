@@ -232,7 +232,7 @@ cleaned-up included layouts and added a few contributed ones
 lyrics plugin updates, including option to load/save lyrics in the tag
 update artistinfo plugin, which now features a similar-artist queue mode)
 add albuminfo plugin
-use Gtk2::StatusIcon instead of Gtk2::TrayIcon for the trayicon
+use Gtk3::StatusIcon instead of Gtk3::TrayIcon for the trayicon
 add option to specify mplayer executable (for mplayer2)
 cover finder plugin updates
 make length check for mp3 configurable, and changes to song check progress code

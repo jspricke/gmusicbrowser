@@ -363,13 +363,13 @@ INIT
 # @FORMATS=@tmp;
 }
 
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 sub new
 {	my ($class,@IDs) = @_;
 	@IDs= ::uniq(@IDs);
-	my $self = bless Gtk2::VBox->new, $class;
+	my $self = bless Gtk3::VBox->new, $class;
 
-	my $table=Gtk2::Table->new (6, 2, FALSE);
+	my $table=Gtk3::Table->new (6, 2, FALSE);
 	my $row1=my $row2=0;
 	my %widgets;
 	$self->{widgets}=\%widgets;
@@ -387,7 +387,7 @@ sub new
 		}
 		my $text= ::__n("%d file in {folder}","%d files in {folder}",scalar@IDs);
 		$text= ::__x($text, folder => ::MarkupFormat('<small>%s</small>', $displaysub->($folder) ) );
-		my $labelfile = Gtk2::Label->new;
+		my $labelfile = Gtk3::Label->new;
 		$labelfile->set_markup($text);
 		$labelfile->set_selectable(TRUE);
 		$labelfile->set_line_wrap(TRUE);
@@ -395,7 +395,7 @@ sub new
 	}
 
 	for my $field ( Songs::EditFields('many') )
-	{	my $check=Gtk2::CheckButton->new(Songs::FieldName($field));
+	{	my $check=Gtk3::CheckButton->new(Songs::FieldName($field));
 		my $widget=Songs::EditWidget($field,'many',\@IDs);
 		next unless $widget;
 		$widgets{$field}=$widget;
@@ -408,9 +408,9 @@ sub new
 		$table->attach($widget,$col++,$col,$row,$row+1,['fill','expand'],'shrink',3,1);
 	}
 
-	my $vpaned= $self->{vpaned}=Gtk2::VPaned->new;
+	my $vpaned= $self->{vpaned}=Gtk3::VPaned->new;
 	$self->add($vpaned);
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('none');
 	$sw->set_policy('never', 'automatic');
 	$sw->add_with_viewport($table);
@@ -429,25 +429,25 @@ sub add_per_file_part
 {	my $self=shift;
 	my $IDs=$self->{IDs};
 	Songs::SortList($IDs,'path album:i disc track file');
-	my $perfile_table=Gtk2::Table->new( scalar(@$IDs), 10, FALSE);
+	my $perfile_table=Gtk3::Table->new( scalar(@$IDs), 10, FALSE);
 	$self->{perfile_table}=$perfile_table;
 	my $row=0;
 	$self->add_column('track');
 	$self->add_column('title');
 
 	my $lastcol=1;	#for the filename column
-	my $BSelFields=Gtk2::Button->new(_"Select fields");
-	{	my $menu=Gtk2::Menu->new;
+	my $BSelFields=Gtk3::Button->new(_"Select fields");
+	{	my $menu=Gtk3::Menu->new;
 		my $menu_cb=sub {$self->add_column($_[1])};
 		for my $f ( Songs::EditFields('per_id') )
-		{	my $item=Gtk2::CheckMenuItem->new_with_label( Songs::FieldName($f) );
+		{	my $item=Gtk3::CheckMenuItem->new_with_label( Songs::FieldName($f) );
 			$item->set_active(1) if $self->{'pfcheck_'.$f};
 			$item->signal_connect(activate => $menu_cb,$f);
 			$menu->append($item);
 			$lastcol++;
 		}
-		#$menu->append(Gtk2::SeparatorMenuItem->new);
-		#my $item=Gtk2::CheckMenuItem->new(_"Select files");
+		#$menu->append(Gtk3::SeparatorMenuItem->new);
+		#my $item=Gtk3::CheckMenuItem->new(_"Select files");
 		#$item->signal_connect(activate => sub { $self->add_selectfile_column });
 		#$menu->append($item);
 		$BSelFields->signal_connect( button_press_event => sub
@@ -458,20 +458,20 @@ sub add_per_file_part
 	}
 
 	#add filename column
-	$perfile_table->attach( Gtk2::Label->new(Songs::FieldName('file')) ,$lastcol,$lastcol+1,$row,$row+1,'fill','shrink',1,1);
+	$perfile_table->attach( Gtk3::Label->new(Songs::FieldName('file')) ,$lastcol,$lastcol+1,$row,$row+1,'fill','shrink',1,1);
 	for my $ID (@$IDs)
 	{	$row++;
-		my $label=Gtk2::Label->new( Songs::Display($ID,'file') );
+		my $label=Gtk3::Label->new( Songs::Display($ID,'file') );
 		$label->set_selectable(TRUE);
 		$label->set_alignment(0,0.5);	#left-aligned
 		$perfile_table->attach($label,$lastcol,$lastcol+1,$row,$row+1,'fill','shrink',1,1); #filename
 	}
 
-	my $Btools=Gtk2::Button->new(_"tools");
-	{	my $menu=Gtk2::Menu->new;
+	my $Btools=Gtk3::Button->new(_"tools");
+	{	my $menu=Gtk3::Menu->new;
 		my $menu_cb=sub {$self->tool($_[1])};
 		for my $ref (@Tools)	#currently only able to transform all entrys with the for_all function
-		{	my $item=Gtk2::MenuItem->new($ref->{label});
+		{	my $item=Gtk3::MenuItem->new($ref->{label});
 			$item->signal_connect(activate => $menu_cb,$ref->{for_all});
 			$menu->append($item) if $ref->{for_all};
 		}
@@ -484,36 +484,36 @@ sub add_per_file_part
 		sub { my $self=::find_ancestor($_[0],__PACKAGE__); $self->tool(sub {''}) },
 		undef,_"Clear selected fields");
 
-	my $sw = Gtk2::ScrolledWindow->new;
+	my $sw = Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('none');
 	$sw->set_policy('automatic', 'automatic');
 	$sw->add_with_viewport($perfile_table);
 
 	# expander to hide/show the per-file part
-	my $exp_label=Gtk2::Label->new_with_format("<b>%s</b>",_"Per-song values");
-	my $expander=Gtk2::Expander->new;
+	my $exp_label=Gtk3::Label->new_with_format("<b>%s</b>",_"Per-song values");
+	my $expander=Gtk3::Expander->new;
 	$expander->set_expanded(TRUE);
 	$expander->set_label_widget($exp_label);
 	$expander->signal_connect(activate=>sub { my $on= !$_[0]->get_expanded; $_->set_visible($on) for $sw,$BSelFields; });
 
 	$self->{vpaned}->pack2( ::Vpack('compact',[$expander,$BSelFields],'_',$sw), TRUE,FALSE);
-	my $vsizegroup=Gtk2::SizeGroup->new('vertical');
+	my $vsizegroup=Gtk3::SizeGroup->new('vertical');
 	$vsizegroup->add_widget($_) for $exp_label,$BSelFields; # so that they are aligned
 	$sw->set_size_request(-1,$exp_label->size_request->height); # so that the expander is always visible
 
-	my $store= Gtk2::ListStore->new('Glib::String','Glib::Scalar');
-	$self->{autofill_combo}= my $Bautofill=Gtk2::ComboBox->new($store);
-	my $renderer=Gtk2::CellRendererText->new;
+	my $store= Gtk3::ListStore->new('Glib::String','Glib::Scalar');
+	$self->{autofill_combo}= my $Bautofill=Gtk3::ComboBox->new($store);
+	my $renderer=Gtk3::CellRendererText->new;
 	$Bautofill->pack_start($renderer,::TRUE);
 	$Bautofill->add_attribute($renderer, markup => 0);
 	$self->autofill_check;
 	$Bautofill->signal_connect(changed => \&autofill_cb);
 	::Watch( $self, AutofillFormats => \&autofill_check);
 
-	my $checkOBlank=Gtk2::CheckButton->new(_"Auto fill only blank fields");
+	my $checkOBlank=Gtk3::CheckButton->new(_"Auto fill only blank fields");
 	$self->{AFOBlank}=$checkOBlank;
-	my $hbox=Gtk2::HBox->new;
-	$hbox->pack_start($_, FALSE, FALSE, 0) for Gtk2::VSeparator->new,$Bautofill,$BClear,$checkOBlank,$Btools,
+	my $hbox=Gtk3::HBox->new;
+	$hbox->pack_start($_, FALSE, FALSE, 0) for Gtk3::VSeparator->new,$Bautofill,$BClear,$checkOBlank,$Btools,
 	$self->pack_start($hbox, FALSE, FALSE, 4);
 }
 
@@ -528,7 +528,7 @@ sub add_column
 	my $table=$self->{perfile_table};
 	my $col=++$table->{col};
 	my $row=0;
-	my $check=Gtk2::CheckButton->new( Songs::FieldName($field) );
+	my $check=Gtk3::CheckButton->new( Songs::FieldName($field) );
 	my @entries;
 	$self->{'pfcheck_'.$field}=$check;
 	$self->{pf_widgets}{$field}=\@entries;
@@ -566,7 +566,7 @@ sub add_column
 		$button->set_size_request();
 		$check->signal_connect( toggled => sub { $button->set_sensitive($_[0]->get_active) });
 		$button->set_sensitive(FALSE);
-		my $hbox=Gtk2::HBox->new(0,0);
+		my $hbox=Gtk3::HBox->new(0,0);
 		$hbox->pack_start($_,0,0,0) for $check,$button;
 		$check=$hbox;
 		#$check= ::Hpack($check,$button);
@@ -587,7 +587,7 @@ sub add_selectfile_column
 	my $row=0; my $col=0; my $i=0;
 	for my $ID ( @{$self->{IDs}} )
 	{	$row++;
-		my $check=Gtk2::CheckButton->new;
+		my $check=Gtk3::CheckButton->new;
 		$check->set_active(1);
 		$check->signal_connect( toggled => sub { my ($check,$i)=@_; my $self=::find_ancestor($check,__PACKAGE__); my $active=$check->get_active; $self->{pf_widgets}{$_}[$i]->set_sensitive($active) for keys %{ $self->{pf_widgets} } },$i);
 		#$widget->signal_connect(focus_in_event=> \&scroll_to_entry);
@@ -600,7 +600,7 @@ sub add_selectfile_column
 
 sub scroll_to_entry
 {	my $ent=$_[0];
-	if (my $sw=::find_ancestor($ent,'Gtk2::Viewport'))
+	if (my $sw=::find_ancestor($ent,'Gtk3::Viewport'))
 	{	my ($x,$y,$w,$h)= $ent->allocation->values;
 		$sw->get_hadjustment->clamp_page($x,$x+$w);
 		$sw->get_vadjustment->clamp_page($y,$y+$h);
@@ -731,14 +731,14 @@ sub save
 	unless (@modif) { $finishsub->(); return}
 
 	$self->set_sensitive(FALSE);
-	my $progressbar = Gtk2::ProgressBar->new;
+	my $progressbar = Gtk3::ProgressBar->new;
 	$self->pack_start($progressbar, FALSE, TRUE, 0);
 	$progressbar->show_all;
 	Songs::Set($IDs,\@modif, progress=>$progressbar, callback_finish=>$finishsub, window=> $self->get_toplevel);
 }
 
 package GMB::Edit::Autofill_formats;
-use base 'Gtk2::Dialog';
+use base 'Gtk3::Dialog';
 our $Instance;
 
 our %Override;
@@ -749,24 +749,24 @@ INIT
 sub new
 {	my $ID= $_[0]{IDs}[0];
 	if ($Instance) { $Instance->force_present; $Instance->{ID}=$ID; $Instance->preview_update; return };
-	my $self = Gtk2::Dialog->new ("Custom auto-fill filename formats", undef, [],  'gtk-close' => 'none');
+	my $self = Gtk3::Dialog->new ("Custom auto-fill filename formats", undef, [],  'gtk-close' => 'none');
 	$Instance=bless $self,__PACKAGE__;
 	::SetWSize($self,'AutofillFormats');
 	$self->set_border_width(4);
 	$self->{ID}=$ID;
-	$self->{store}=my $store= Gtk2::ListStore->new('Glib::String','Glib::String');
-	$self->{treeview}=my $treeview=Gtk2::TreeView->new($store);
-	$treeview->append_column( Gtk2::TreeViewColumn->new_with_attributes(_"Custom formats", Gtk2::CellRendererText->new, text => 0 ));
+	$self->{store}=my $store= Gtk3::ListStore->new('Glib::String','Glib::String');
+	$self->{treeview}=my $treeview=Gtk3::TreeView->new($store);
+	$treeview->append_column( Gtk3::TreeViewColumn->new_with_attributes(_"Custom formats", Gtk3::CellRendererText->new, text => 0 ));
 	#$treeview->set_headers_visible(::FALSE);
 	$treeview->signal_connect(cursor_changed=> \&cursor_changed_cb);
 
-	my $label_format=Gtk2::Label->new(_"Filename format :");
-	my $label_re=    Gtk2::Label->new(_"Regular expression :");
-	$self->{entry_format}=	my $entry_format=Gtk2::Entry->new;
-	$self->{entry_re}=	my $entry_re=	Gtk2::Entry->new;
-	$self->{check_re}=	my $check_re=	Gtk2::CheckButton->new(_"Use default regular expression");
-	$self->{error}=		my $error=	Gtk2::Label->new;
-	$self->{preview}=	my $preview=	Gtk2::Label->new;
+	my $label_format=Gtk3::Label->new(_"Filename format :");
+	my $label_re=    Gtk3::Label->new(_"Regular expression :");
+	$self->{entry_format}=	my $entry_format=Gtk3::Entry->new;
+	$self->{entry_re}=	my $entry_re=	Gtk3::Entry->new;
+	$self->{check_re}=	my $check_re=	Gtk3::CheckButton->new(_"Use default regular expression");
+	$self->{error}=		my $error=	Gtk3::Label->new;
+	$self->{preview}=	my $preview=	Gtk3::Label->new;
 	$self->{remove_button}=	my $button_del= ::NewIconButton('gtk-remove',_"Remove");
 	$self->{add_button}=	my $button_add= ::NewIconButton('gtk-save',_"Save");
 	my $button_new= ::NewIconButton('gtk-new', _"New");
@@ -774,15 +774,15 @@ sub new
 	$button_add->signal_connect(clicked=>\&button_cb,'save');
 	$button_new->signal_connect(clicked=>\&button_cb,'new');
 	$preview->set_alignment(0,.5);
-	my $sg=Gtk2::SizeGroup->new('horizontal');
+	my $sg=Gtk3::SizeGroup->new('horizontal');
 	$sg->add_widget($_) for $label_format,$label_re;
-	my $bbox= Gtk2::HButtonBox->new;
+	my $bbox= Gtk3::HButtonBox->new;
 	$bbox->add($_) for $button_del, $button_add, $button_new;
 	my $sw= ::new_scrolledwindow($treeview,'etched-in');
 	 $sw->set_size_request(150,-1); #give the list a minimum width
 	my $table= ::MakeReplaceTable('taAlCyndgL', A=>Songs::FieldName('album_artist_raw'));	#AutoFillFields
 	my $hbox= ::Vpack([$label_format,'_',$entry_format],$table,$check_re,[$label_re,'_',$entry_re],$error,$preview,'-',$bbox);
-	my $hpaned= Gtk2::HPaned->new;
+	my $hpaned= Gtk3::HPaned->new;
 	 $hpaned->pack1($sw,1,1);
 	 $hpaned->pack2($hbox,1,0);
 	$self->vbox->add($hpaned);
@@ -941,11 +941,11 @@ sub cursor_changed_cb
 
 
 package GMB::TagEdit::EntryString;
-use base 'Gtk2::Entry';
+use base 'Gtk3::Entry';
 
 sub new
 {	my ($class,$field,$ID,$width,$completion) = @_;
-	my $self = bless Gtk2::Entry->new, $class;
+	my $self = bless Gtk3::Entry->new, $class;
 	#$self->{field}=$field;
 	my $val=Songs::Get($ID,$field);
 	$self->set_text($val);
@@ -961,12 +961,12 @@ sub tool
 }
 
 package GMB::TagEdit::EntryText;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$field,$IDs) = @_;
-	my $self = bless Gtk2::VBox->new, $class;
-	my $textview= $self->{textview}= Gtk2::TextView->new;
+	my $self = bless Gtk3::VBox->new, $class;
+	my $textview= $self->{textview}= Gtk3::TextView->new;
 	$textview->set_size_request(100,($textview->create_pango_layout("X")->get_pixel_size)[1]*4); #request 4 lines of height
 	my $sw= ::new_scrolledwindow($textview,'etched-in');
 	$self->add($sw);
@@ -977,7 +977,7 @@ sub new
 		$val=$l[0];
 		$self->{IDs}=$IDs;
 		$self->{field}=$field;
-		$self->{append}=my $append=Gtk2::CheckButton->new(_"Append (only if not already present)");
+		$self->{append}=my $append=Gtk3::CheckButton->new(_"Append (only if not already present)");
 		$self->pack_end($append,0,0,0);
 	}
 	else { $val=Songs::Get($IDs,$field); }
@@ -1011,7 +1011,7 @@ sub tool
 }
 
 package GMB::TagEdit::EntryNumber;
-use base 'Gtk2::SpinButton';
+use base 'Gtk3::SpinButton';
 
 sub new
 {	my ($class,$field,$IDs,%opt) = @_;	#possible options in %opt : signed digits min max mode
@@ -1019,8 +1019,8 @@ sub new
 	my $max= $opt{max} || 10000000;
 	my $min= $opt{min} || ($opt{signed} ? -$max : 0);
 	my $digits= $opt{digits} || 0;
-	my $adj=Gtk2::Adjustment->new(0,$min,$max,1,10,0);
-	my $self = bless Gtk2::SpinButton->new($adj,10,$digits), $class;
+	my $adj=Gtk3::Adjustment->new(0,$min,$max,1,10,0);
+	my $self = bless Gtk3::SpinButton->new($adj,10,$digits), $class;
 	$self->{noexpand}=1;
 	#$self->{field}=$field;
 	my $val;
@@ -1036,8 +1036,8 @@ sub new
 		{	$self->signal_connect(output=> \&output_nozero);
 		}
 		elsif ($mode eq 'allow_empty')	# non-numeric values are replaced with "" which is treated as different than 0
-		{	$self->signal_connect(input => sub { my $v=Gtk2::Entry::get_text($_[0]); $_[0]{null}= $v!~/\d/; return 0});
-			$self->signal_connect(output=> sub { my $v=$_[0]->get_value; $_[0]{null}=0 if $v; return 0 if !$_[0]{null}; Gtk2::Entry::set_text($_[0],''); return 1; });
+		{	$self->signal_connect(input => sub { my $v=Gtk3::Entry::get_text($_[0]); $_[0]{null}= $v!~/\d/; return 0});
+			$self->signal_connect(output=> sub { my $v=$_[0]->get_value; $_[0]{null}=0 if $v; return 0 if !$_[0]{null}; Gtk3::Entry::set_text($_[0],''); return 1; });
 		}
 		elsif ($mode eq 'year')
 		{	$self->set_wrap(1);
@@ -1074,16 +1074,16 @@ sub tool
 sub output_nozero
 {	my $v=$_[0]->get_value;
 	return 0 if $v;
-	Gtk2::Entry::set_text($_[0],'');
+	Gtk3::Entry::set_text($_[0],'');
 	return 1;
 }
 
 package GMB::TagEdit::EntryBoolean;
-use base 'Gtk2::CheckButton';
+use base 'Gtk3::CheckButton';
 
 sub new
 {	my ($class,$field,$IDs) = @_;
-	my $self = bless Gtk2::CheckButton->new, $class;
+	my $self = bless Gtk3::CheckButton->new, $class;
 	$self->{noexpand}=1;
 	#$self->{field}=$field;
 	my $val;
@@ -1101,12 +1101,12 @@ sub get_text
 }
 
 package GMB::TagEdit::Combo;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$field,$IDs,$listall) = @_;
-	my $self= bless Gtk2::HBox->new, $class;
-	my $combo= Gtk2::ComboBoxEntry->new_text;
+	my $self= bless Gtk3::HBox->new, $class;
+	my $combo= Gtk3::ComboBoxEntry->new_text;
 	$self->add($combo);
 	$self->{combo}=$combo;
 	my $entry=$self->{entry}=$combo->child;
@@ -1143,11 +1143,11 @@ sub tool
 
 
 package GMB::TagEdit::EntryRating;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$field,$IDs) = @_;
-	my $self = bless Gtk2::HBox->new, $class;
+	my $self = bless Gtk3::HBox->new, $class;
 	#$self->{field}=$field;
 
 	my $init;
@@ -1157,9 +1157,9 @@ sub new
 	}
 	else {	$init=Songs::Get($IDs,$field);	}
 
-	my $adj=Gtk2::Adjustment->new(0,0,100,10,20,0);
-	my $spin=Gtk2::SpinButton->new($adj,10,0);
-	my $check=Gtk2::CheckButton->new(_"use default");
+	my $adj=Gtk3::Adjustment->new(0,0,100,10,20,0);
+	my $spin=Gtk3::SpinButton->new($adj,10,0);
+	my $check=Gtk3::CheckButton->new(_"use default");
 	my $stars=Stars->new($field,$init,\&update_cb);
 
 	$self->pack_start($_,0,0,0) for $stars,$spin,$check;
@@ -1199,17 +1199,17 @@ sub is_blank
 }
 
 package GMB::TagEdit::FlagList;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$field,$ID) = @_;
-	my $self = bless Gtk2::HBox->new(0,0), $class;
+	my $self = bless Gtk3::HBox->new(0,0), $class;
 	$self->{field}=$field;
 	$self->{ID}=$ID;
-	my $button= Gtk2::Button->new;
+	my $button= Gtk3::Button->new;
 	my $add= ::NewIconButton('gtk-add');
-	my $entry= $self->{entry}= Gtk2::Entry->new;
-	my $label=$self->{label}=Gtk2::Label->new;
+	my $entry= $self->{entry}= Gtk3::Entry->new;
+	my $label=$self->{label}=Gtk3::Label->new;
 	$label->set_ellipsize('end');
 	$entry->set_width_chars(12);
 	$button->add($label);
@@ -1251,12 +1251,12 @@ sub popup_add_menu
 sub popup_menu_cb
 {	my $widget=shift;
 	my $self=::find_ancestor($widget,__PACKAGE__);
-	my $menu=Gtk2::Menu->new;
+	my $menu=Gtk3::Menu->new;
 	my $cb= sub { $self->{selected}{ $_[1] }^=1; $self->update; };
 	my @keys= ::superlc_sort(keys %{$self->{selected}});
 	return unless @keys;
 	for my $key (@keys)
-	{	my $item=Gtk2::CheckMenuItem->new_with_label($key);
+	{	my $item=Gtk3::CheckMenuItem->new_with_label($key);
 		$item->set_active(1) if $self->{selected}{$key};
 		$item->signal_connect(toggled => $cb,$key);
 		$menu->append($item);
@@ -1294,30 +1294,30 @@ sub set_text		# for setting from autofill-from-filename
 }
 
 package GMB::TagEdit::EntryMassList;	#for mass-editing fields with multiple values
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$field,$IDs) = @_;
-	my $self = bless Gtk2::VBox->new(1,1), $class;
+	my $self = bless Gtk3::VBox->new(1,1), $class;
 	$self->{field}=$field;
-	my $sg= Gtk2::SizeGroup->new('horizontal');
-	my $entry= $self->{entry}= Gtk2::Entry->new;
+	my $sg= Gtk3::SizeGroup->new('horizontal');
+	my $entry= $self->{entry}= Gtk3::Entry->new;
 	my $add= ::NewIconButton('gtk-add');
 	my $removeall= ::NewIconButton('gtk-clear', _"Remove all", \&clear);
 	$add->signal_connect( button_press_event => sub { add_entry_text_cb($_[0]); $_[0]->grab_focus;1; } );
 	$add->signal_connect( clicked => \&add_entry_text_cb );
 	for my $ref (['toadd',1,_"Add"],['toremove',-1,_"Remove"])
 	{	my ($key,$mode,$text)=@$ref;
-		my $label=$self->{$key}=Gtk2::Label->new;
+		my $label=$self->{$key}=Gtk3::Label->new;
 		$label->set_ellipsize('end');
 		$label->{mode}=$mode;
-		my $button= Gtk2::Button->new;
+		my $button= Gtk3::Button->new;
 		$button->add($label);
 		$button->{mode}=$mode;
 		$button->signal_connect( clicked => \&popup_menu_cb );
 		$button->signal_connect( button_press_event => sub { popup_menu_cb($_[0]); $_[0]->grab_focus;1; } );
-		my $sidelabel= Gtk2::Label->new($text);
-		my $hbox= Gtk2::HBox->new(0,1);
+		my $sidelabel= Gtk3::Label->new($text);
+		my $hbox= Gtk3::HBox->new(0,1);
 		$hbox->pack_start($sidelabel,0,0,2);
 		$hbox->pack_start($button,1,1,2);
 		$hbox->pack_start($entry,0,0,0) if $mode>0;
@@ -1384,12 +1384,12 @@ sub popup_menu_cb
 	my $mode=$child->{mode};
 	my $self=::find_ancestor($child,__PACKAGE__);
 	my $h= $self->{selected};
-	my $menu=Gtk2::Menu->new;
+	my $menu=Gtk3::Menu->new;
 	my $cb= sub { $self->{selected}{ $_[1] }= $_[0]->get_active ? $mode : 0; $self->update; };
 	my @keys= ::superlc_sort(keys %$h);
 	return unless @keys;
 	for my $key (@keys)
-	{	my $item=Gtk2::CheckMenuItem->new_with_label($key);
+	{	my $item=Gtk3::CheckMenuItem->new_with_label($key);
 		$item->set_active(1) if $h->{$key}==$mode;
 		$item->signal_connect(toggled => $cb,$key);
 		$menu->append($item);
@@ -1421,25 +1421,25 @@ sub set_text		# for setting from autofill-from-filename
 }
 
 package EditTagSimple;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 use constant { TRUE  => 1, FALSE => 0, };
 
 sub new
 {	my ($class,$ID) = @_;
-	my $self = bless Gtk2::VBox->new, $class;
+	my $self = bless Gtk3::VBox->new, $class;
 	$self->{ID}=$ID;
 
-	my $labelfile = Gtk2::Label->new;
+	my $labelfile = Gtk3::Label->new;
 	$labelfile->set_markup( ::ReplaceFieldsAndEsc($ID,'<small>%u</small>') );
 	$labelfile->set_selectable(TRUE);
 	$labelfile->set_line_wrap(TRUE);
 
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('none');
 	$sw->set_policy('never', 'automatic');
 
-	my $table=Gtk2::Table->new (6, 2, FALSE);
+	my $table=Gtk3::Table->new (6, 2, FALSE);
 	$sw->add_with_viewport($table);
 	$self->{table}=$table;
 	$self->fill;
@@ -1462,7 +1462,7 @@ sub fill
 		if (my $w=$self->{fields}{$field})	#refresh the fields
 			{ $table->remove($w); }
 		else #first time
-		{	my $label=Gtk2::Label->new( Songs::FieldName($field) );
+		{	my $label=Gtk3::Label->new( Songs::FieldName($field) );
 			$table->attach($label,$col,$col+1,$row,$row+1,'fill','shrink',2,2);
 		}
 		$table->attach($widget,$col+1,$col+2,$row,$row+1,['fill','expand'],'shrink',2,2);
@@ -1482,16 +1482,16 @@ sub get_changes
 
 
 package Edit_Embedded_Picture;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$ID) = @_;
-	my $self = bless Gtk2::VBox->new, $class;
+	my $self = bless Gtk3::VBox->new, $class;
 	$self->{ID}=$ID;
 
-	$self->{store}= Gtk2::ListStore->new(qw/Glib::Uint Glib::String/);
-	my $treeview= $self->{treeview}= Gtk2::TreeView->new($self->{store});
-	$treeview->insert_column_with_attributes(-1, "type",Gtk2::CellRendererText->new, text => 1);
+	$self->{store}= Gtk3::ListStore->new(qw/Glib::Uint Glib::String/);
+	my $treeview= $self->{treeview}= Gtk3::TreeView->new($self->{store});
+	$treeview->insert_column_with_attributes(-1, "type",Gtk3::CellRendererText->new, text => 1);
 	$treeview->set_headers_visible(0);
 	$treeview->get_selection->signal_connect(changed => \&selection_changed_cb,$self);
 
@@ -1519,9 +1519,9 @@ sub new
 	my $button_del= ::NewIconButton('gtk-remove', _"Remove picture");
 	my $button_set= ::NewIconButton('gtk-open',_"Set picture");
 	my $button_new= $self->{button_new}= ::NewIconButton('gtk-add', _"Add picture");
-	my $combo_type= $self->{combo_type}= Gtk2::ComboBox->new_text;
-	my $entry_desc= $self->{entry_desc}= Gtk2::Entry->new;
-	my $info_label= $self->{info_label}= Gtk2::Label->new;
+	my $combo_type= $self->{combo_type}= Gtk3::ComboBox->new_text;
+	my $entry_desc= $self->{entry_desc}= Gtk3::Entry->new;
+	my $info_label= $self->{info_label}= Gtk3::Label->new;
 	$entry_desc->set_tooltip_text(_"Description");
 	$combo_type->set_tooltip_text(_"Picture type");
 	$combo_type->append_text($_) for @$EntryMulti::PICTYPE;
@@ -1609,7 +1609,7 @@ sub selection_changed_cb
 		$info{size}=length $data;
 		my $loader= GMB::Picture::LoadPixData($data);
 		last unless $loader;
-		if ($Gtk2::VERSION >= 1.092)
+		if ($Gtk3::VERSION >= 1.092)
 		{	my $h=$loader->get_format;
 			$self->{pix}[$nb][0]= $h->{mime_types}[0];
 		}
@@ -1711,7 +1711,7 @@ sub context_menu_args
 }
 sub key_press_cb
 {	my ($self,$event)=@_;
-	my $key=Gtk2::Gdk->keyval_name( $event->keyval );
+	my $key=Gtk3::Gdk->keyval_name( $event->keyval );
 	if    (::WordIn($key,'Insert KP_Insert'))	{ $self->new_picture_cb; }
 	elsif (::WordIn($key,'Delete KP_Delete'))	{ $self->remove_selected_cb; }
 	else {return 0}
@@ -1729,16 +1729,16 @@ sub get_changes
 ############################## Advanced tag editing ##############################
 
 package EditTag;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my ($class,$window,$ID) = @_;
 	my $file= Songs::GetFullFilename($ID);
 	return undef unless $file;
-	my $self = bless Gtk2::VBox->new, $class;
+	my $self = bless Gtk3::VBox->new, $class;
 	$self->{window}=$window;
 
-	my $labelfile=Gtk2::Label->new;
+	my $labelfile=Gtk3::Label->new;
 	$labelfile->set_markup( ::ReplaceFieldsAndEsc($ID,'<small>%u</small>') );
 	$labelfile->set_selectable(::TRUE);
 	$labelfile->set_line_wrap(::TRUE);
@@ -1770,7 +1770,7 @@ sub new
 	push @boxes,TagBox->new($_,1) for grep defined,@tags;
 	push @boxes,TagBox_id3v1->new($filetag,1) if $filetag->{ID3v1};
 
-	my $notebook=Gtk2::Notebook->new;
+	my $notebook=Gtk3::Notebook->new;
 	for my $box (grep defined, @boxes)
 	{	$notebook->append_page($box,$box->{title});
 	}
@@ -1793,7 +1793,7 @@ sub save
 }
 
 package TagBox;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 use constant
 {	TRUE  => 1, FALSE => 0,
@@ -1962,20 +1962,20 @@ sub new
 	my $tagtype=ref $tag; $tagtype=~s/^Tag:://i;
 	unless ($tagprop{$tagtype}) {warn "unknown tag '$tagtype'\n"; return undef;}
 	$tagtype=$tagprop{$tagtype};
-	my $self=bless Gtk2::VBox->new,$class;
+	my $self=bless Gtk3::VBox->new,$class;
 	my $name=$tagtype->{name} || $tagtype->{namesub}($tag);
 	$self->{title}=$name;
 	$self->{tag}=$tag;
 	$self->{tagtype}=$tagtype;
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	#$sw->set_shadow_type('etched-in');
 	$sw->set_policy('automatic','automatic');
-	$self->{table}=my $table=Gtk2::Table->new(2,2,FALSE);
+	$self->{table}=my $table=Gtk3::Table->new(2,2,FALSE);
 	$table->{row}=0;
 	$table->{widgets}=[];
 	$sw->add_with_viewport($table);
 	if ($option)
-	{	my $checkrm=Gtk2::CheckButton->new(_"Remove this tag");
+	{	my $checkrm=Gtk3::CheckButton->new(_"Remove this tag");
 		$checkrm->signal_connect( toggled => sub
 		{	my $state=$_[0]->get_active;
 			$table->{deleted}=$state;
@@ -1987,8 +1987,8 @@ sub new
 
 	if (my $list=$tagtype->{addlist})
 	{	my $addbut=::NewIconButton('gtk-add',_"add");
-		my $addlist=Gtk2::ComboBox->new_text;
-		my $hbox=Gtk2::HBox->new(FALSE,8);
+		my $addlist=Gtk3::ComboBox->new_text;
+		my $hbox=Gtk3::HBox->new(FALSE,8);
 		$hbox->pack_start($_,FALSE,FALSE,0) for $addlist,$addbut;
 		$self->pack_start($hbox,FALSE,FALSE,2);
 		for my $key (@$list)
@@ -2060,7 +2060,7 @@ sub addrow
 		$type=$DataType{$type}[0] || 'EntrySimple';
 		my $param=$DataType{$type}[1];
 		if ($key eq '') { ($widget,$label)=EntryDouble->new($value); }
-		else	{ $widget=$type->new($value,$param); $label=Gtk2::Label->new($name); $label->set_tooltip_text($key); }
+		else	{ $widget=$type->new($value,$param); $label=Gtk3::Label->new($name); $label->set_tooltip_text($key); }
 		$table->attach($label,1,2,$row,$row+1,'shrink','shrink',1,1);
 		$table->attach($widget,2,3,$row,$row+1,['fill','expand'],'shrink',1,1);
 		@Todel=($label);
@@ -2069,9 +2069,9 @@ sub addrow
 	$widget->{key}=$key;
 	$widget->{nb}=$nb;
 
-	my $delbut=Gtk2::Button->new;
+	my $delbut=Gtk3::Button->new;
 	$delbut->set_relief('none');
-	$delbut->add(Gtk2::Image->new_from_stock('gtk-remove','menu'));
+	$delbut->add(Gtk3::Image->new_from_stock('gtk-remove','menu'));
 	$table->attach($delbut,0,1,$row,$row+1,'shrink','shrink',1,1);
 	$delbut->signal_connect( clicked => sub
 		{ $widget->{deleted}=1;
@@ -2112,20 +2112,20 @@ sub save
 }
 
 package TagBox_id3v1;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 use constant { TRUE  => 1, FALSE => 0 };
 
 sub new
 {	my ($class,$tag,$option)=@_;
-	my $self=bless Gtk2::VBox->new, $class;
+	my $self=bless Gtk3::VBox->new, $class;
 	$self->{title}=_"id3v1 tag";
 	$self->{tag}=$tag;
-	$self->{table}=my $table=Gtk2::Table->new(2,2,FALSE);
+	$self->{table}=my $table=Gtk3::Table->new(2,2,FALSE);
 	$table->{widgets}=[];
 	my $row=0;
 	if ($option)
-	{	my $checkrm=Gtk2::CheckButton->new(_"Remove this tag");
+	{	my $checkrm=Gtk3::CheckButton->new(_"Remove this tag");
 		$checkrm->signal_connect( toggled => sub
 		{	my $state=$_[0]->get_active;
 			$table->{deleted}=$state;
@@ -2136,7 +2136,7 @@ sub new
 	}
 	$self->add($table);
 	for my $aref ([_"Title",0,30],[_"Artist",1,30],[_"Album",2,30],[_"Year",3,4],[_"Comment",4,30],[_"Track",5,2])
-	{	my $label=Gtk2::Label->new($aref->[0]);
+	{	my $label=Gtk3::Label->new($aref->[0]);
 		my $entry=EntrySimple->new( $tag->{ID3v1}[ $aref->[1] ], $aref->[2]);
 		push @{ $table->{widgets} }, $entry;
 		$table->attach($label,0,1,$row,$row+1,'shrink','shrink',1,1);
@@ -2145,7 +2145,7 @@ sub new
 	}
 	my $combo=EntryCombo->new($tag->{ID3v1}[6],\@Tag::MP3::Genres);
 	push @{ $table->{widgets} }, $combo;
-	$table->attach(Gtk2::Label->new(_"Genre"),0,1,$row,$row+1,'shrink','shrink',1,1);
+	$table->attach(Gtk3::Label->new(_"Genre"),0,1,$row,$row+1,'shrink','shrink',1,1);
 	$table->attach($combo,1,2,$row,$row+1,['fill','expand'],'shrink',1,1);
 	return $self;
 }
@@ -2168,11 +2168,11 @@ sub save
 }
 
 package EntrySimple;
-use base 'Gtk2::Entry';
+use base 'Gtk3::Entry';
 
 sub new
 {	my ($class,$init,$len) = @_;
-	my $self = bless Gtk2::Entry->new, $class;
+	my $self = bless Gtk3::Entry->new, $class;
 	$self->set_text($init);
 	$self->set_width_chars($len) if $len;
 	$self->set_max_length($len) if $len;
@@ -2188,14 +2188,14 @@ sub return_value
 }
 
 package EntryMultiLines;
-use base 'Gtk2::ScrolledWindow';
+use base 'Gtk3::ScrolledWindow';
 
 sub new
 {	my ($class,$init) = @_;
-	my $self = bless Gtk2::ScrolledWindow->new, $class;
+	my $self = bless Gtk3::ScrolledWindow->new, $class;
 	 $self->set_shadow_type('etched-in');
 	 $self->set_policy('automatic','automatic');
-	my $textview= $self->{textview}= Gtk2::TextView->new;
+	my $textview= $self->{textview}= Gtk3::TextView->new;
 	$textview->set_size_request(100,($textview->create_pango_layout("X")->get_pixel_size)[1]*4); #request 4 lines of height
 	$self->add($textview);
 	$self->set_text($init);
@@ -2219,14 +2219,14 @@ sub return_value
 }
 
 package EntryDouble;
-use base 'Gtk2::Entry';
+use base 'Gtk3::Entry';
 
 sub new
 {	my ($class,$init) = @_;
-	my $self = bless Gtk2::Entry->new, $class;
+	my $self = bless Gtk3::Entry->new, $class;
 	#$self->set_text($init);
 	#$self->{init}=$init;
-	$self->{keyEntry}=Gtk2::Entry->new;
+	$self->{keyEntry}=Gtk3::Entry->new;
 	return $self,$self->{keyEntry};
 }
 sub return_value
@@ -2238,12 +2238,12 @@ sub return_value
 }
 
 package EntryNumber;
-use base 'Gtk2::SpinButton';
+use base 'Gtk3::SpinButton';
 
 sub new
 {	my ($class,$init,$max) = @_;
-	my $self = bless Gtk2::SpinButton->new(
-		Gtk2::Adjustment->new ($init||0, 0, $max||10000000, 1, 10, 0) ,10,0  )
+	my $self = bless Gtk3::SpinButton->new(
+		Gtk3::Adjustment->new ($init||0, 0, $max||10000000, 1, 10, 0) ,10,0  )
 		, $class;
 	$self->{init}=$self->get_value;
 	return $self;
@@ -2256,11 +2256,11 @@ sub return_value
 }
 
 package EntryBoolean;
-use base 'Gtk2::CheckButton';
+use base 'Gtk3::CheckButton';
 
 sub new
 {	my ($class,$init) = @_;
-	my $self = bless Gtk2::CheckButton->new, $class;
+	my $self = bless Gtk3::CheckButton->new, $class;
 	$self->set_active(1) if $init;
 	$self->{init}=$init;
 	return $self;
@@ -2272,11 +2272,11 @@ sub return_value
 	return $value;
 }
 package EntryCombo;
-use base 'Gtk2::ComboBox';
+use base 'Gtk3::ComboBox';
 
 sub new
 {	my ($class,$init,$listref) = @_;
-	my $self = bless Gtk2::ComboBox->new_text, $class;
+	my $self = bless Gtk3::ComboBox->new_text, $class;
 	if ($init && $init=~m/\D/)
 	{	my $text=$init;
 		$init='';
@@ -2300,7 +2300,7 @@ sub return_value
 }
 
 package EntryMulti;	#for id3v2 frames containing multiple fields
-use base 'Gtk2::Frame';
+use base 'Gtk3::Frame';
 
 my %SUBTAGPROP; our $PICTYPE;
 INIT
@@ -2363,8 +2363,8 @@ INIT
 
 sub new
 {	my ($class,$values,$key,$name,$type,$realkey) = @_;
-	my $self = bless Gtk2::Frame->new($name), $class;
-	my $table=Gtk2::Table->new(1, 4, 0);
+	my $self = bless Gtk3::Frame->new($name), $class;
+	my $table=Gtk3::Table->new(1, 4, 0);
 	$self->add($table);
 	my $prop= $SUBTAGPROP{$key};
 	$prop||= $SUBTAGPROP{$realkey} if $realkey;
@@ -2380,7 +2380,7 @@ sub new
 		}
 		$subtag++;
 		if ($name ne '')
-		{	my $label=Gtk2::Label->new($name);
+		{	my $label=Gtk3::Label->new($name);
 			$table->attach($label,$cols-1,$cols,$frow,$frow+1,'shrink','shrink',1,1);
 		}
 		$widget=$widget->new( $val,$param );
@@ -2404,11 +2404,11 @@ sub return_value
 }
 
 package EntryBinary;
-use base 'Gtk2::Button';
+use base 'Gtk3::Button';
 
 sub new
 {	my $class = shift;
-	my $self = bless Gtk2::Button->new(_"View binary data ..."), $class;
+	my $self = bless Gtk3::Button->new(_"View binary data ..."), $class;
 	$self->{init}=$self->{value}=shift;
 	$self->signal_connect(clicked => \&view);
 	return $self;
@@ -2420,7 +2420,7 @@ sub return_value
 }
 sub view
 {	my $self=$_[0];
-	my $dialog = Gtk2::Dialog->new (_"View Binary", $self->get_toplevel,
+	my $dialog = Gtk3::Dialog->new (_"View Binary", $self->get_toplevel,
 				'destroy-with-parent',
 				'gtk-close' => 'close');
 	$dialog->set_default_response ('close');
@@ -2432,13 +2432,13 @@ sub view
 		$b=~s/[^[:print:]]/./g;	#replace non-printable with '.'
 		$text.="   $b\n";
 	}
-	my $textview=Gtk2::TextView->new;
+	my $textview=Gtk3::TextView->new;
 	my $buffer=$textview->get_buffer;
 	$buffer->set_text($text);
-	$textview->modify_font(Gtk2::Pango::FontDescription->from_string('Monospace'));
+	$textview->modify_font(Pango::FontDescription->from_string('Monospace'));
 	$textview->set_editable(0);
 
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('etched-in');
 	$sw->set_policy('never', 'automatic');
 	$sw->add($textview);
@@ -2449,18 +2449,18 @@ sub view
 }
 
 package EntryCover;
-use base 'Gtk2::Box';
+use base 'Gtk3::Box';
 
 sub new
 {	my $class = shift;
-	my $self = bless Gtk2::HBox->new, $class;
+	my $self = bless Gtk3::HBox->new, $class;
 	$self->{init}=$self->{value}=shift;
-	my $img=$self->{img}=Gtk2::Image->new;
-	my $vbox=Gtk2::VBox->new;
-	my $eventbox=Gtk2::EventBox->new;
+	my $img=$self->{img}=Gtk3::Image->new;
+	my $vbox=Gtk3::VBox->new;
+	my $eventbox=Gtk3::EventBox->new;
 	$eventbox->add($img);
 	$self->add($_) for $eventbox,$vbox;
-	my $label=$self->{label}=Gtk2::Label->new;
+	my $label=$self->{label}=Gtk3::Label->new;
 	my $Bload=::NewIconButton('gtk-open',_"Replace...");
 	my $Bsave=::NewIconButton('gtk-save-as',_"Save as...");
 	$vbox->pack_start($_,0,0,2) for $label,$Bload,$Bsave;
@@ -2500,7 +2500,7 @@ sub set
 	else
 	{ $pixbuf=$loader->get_pixbuf;
 	  $Bsave->set_sensitive(1);
-	  if ($Gtk2::VERSION >= 1.092)
+	  if ($Gtk3::VERSION >= 1.092)
 	  {	my $h=$loader->get_format;
 		$self->{ext} =$h->{extensions}[0];
 		$self->{mime}=$h->{mime_types}[0];
@@ -2551,7 +2551,7 @@ sub update_mime
 	$self->{mime_entry}->set_text($self->{mime});
 }
 
-sub _identify_pictype	#used only if $Gtk2::VERSION < 1.092
+sub _identify_pictype	#used only if $Gtk3::VERSION < 1.092
 {	$_[0]=~m/^\xff\xd8\xff\xe0..JFIF\x00/s && return ('jpg','image/jpeg');
 	$_[0]=~m/^\x89PNG\x0D\x0A\x1A\x0A/ && return ('png','image/png');
 	$_[0]=~m/^GIF8[79]a/ && return ('gif','image/gif');
@@ -2560,11 +2560,11 @@ sub _identify_pictype	#used only if $Gtk2::VERSION < 1.092
 }
 
 package EntryLyrics;
-use base 'Gtk2::Button';
+use base 'Gtk3::Button';
 
 sub new
 {	my $class = shift;
-	my $self = bless Gtk2::Button->new(_"Edit Lyrics ..."), $class;
+	my $self = bless Gtk3::Button->new(_"Edit Lyrics ..."), $class;
 	$self->{init}=$self->{value}=shift;
 	$self->signal_connect(clicked => \&edit);
 	return $self;

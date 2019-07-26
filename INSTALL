@@ -53,10 +53,10 @@ You might want/need to install (from your favorite distribution repository) :
     * to use mplayer
 	  o mplayer
     * to have a tray icon
-          o gtk2-trayicon perl bindings (package named libgtk2-trayicon-perl or perl-Gtk2-TrayIcon)
+          o gtk2-trayicon perl bindings (package named libgtk2-trayicon-perl or perl-Gtk3-TrayIcon)
     * to consult wikipedia pages and search google for lyrics, one of :
-          o gtk2-mozembed perl bindings (package named libgtk2-mozembed-perl or perl-Gtk2-MozEmbed) (see this page)
-          o gtk2-webkit perl bindings (package named perl-Gtk2-WebKit)
+          o gtk2-mozembed perl bindings (package named libgtk2-mozembed-perl or perl-Gtk3-MozEmbed) (see this page)
+          o gtk2-webkit perl bindings (package named perl-Gtk3-WebKit)
     * to control gmusicbrowser through DBus or use the included gnome multimedia keys plugin (for gnome >= 2.18)
           o DBus perl bindings (package named libnet-dbus-perl or perl-Net-DBus)
 

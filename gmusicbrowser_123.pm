@@ -281,15 +281,15 @@ sub _UpdateTime	#used by ogg123 and mpg321
 }
 
 sub AdvancedOptions
-{	my $vbox=Gtk2::VBox->new;
-	my $table=Gtk2::Table->new(1,1,::FALSE);
+{	my $vbox=Gtk3::VBox->new;
+	my $table=Gtk3::Table->new(1,1,::FALSE);
 	my %ext; my %extgroup;
 	$ext{$_}=undef for map split(/ /,$Commands{$_}{type}), keys %Commands;
 	my @ext=sort keys %ext;
 	for my $e (@ext) { $ext{$e}= join '/', $e, sort grep $::Alias_ext{$_} eq $e,keys %::Alias_ext; }
 	my $i=my $j=0;
-	$table->attach_defaults(Gtk2::Label->new($_), $i++,$i,$j,$j+1) for (_"Command", _"Output", _"Options",map " $ext{$_} ", @ext);
-	my $hsize= Gtk2::SizeGroup->new('vertical');
+	$table->attach_defaults(Gtk3::Label->new($_), $i++,$i,$j,$j+1) for (_"Command", _"Output", _"Options",map " $ext{$_} ", @ext);
+	my $hsize= Gtk3::SizeGroup->new('vertical');
 	$hsize->add_widget($_) for $table->get_children;
 	for my $cmd (sort keys %Commands)
 	{	$i=0; $j++;
@@ -298,7 +298,7 @@ sub AdvancedOptions
 		$devs='' if ref $devs && !$Commands{$cmd}{found}; #don't try to find dynamic list of devices if command not found, as the function likely requires the command
 		my @devlist= ref $devs ? $devs->() : split / /,$devs;
 		push @widgets,
-			Gtk2::Label->new($cmd),
+			Gtk3::Label->new($cmd),
 			::NewPrefCombo('123device_'.$cmd => ['default',@devlist]),
 			::NewPrefEntry('123options_'.$cmd);
 		$hsize->add_widget($_) for @widgets;
@@ -306,7 +306,7 @@ sub AdvancedOptions
 		$table->attach_defaults($_, $i++,$i,$j,$j+1) for @widgets;
 		for my $ext (@ext)
 		{	if (exists $cando{$ext})
-			{	my $w=Gtk2::RadioButton->new($extgroup{$ext});
+			{	my $w=Gtk3::RadioButton->new($extgroup{$ext});
 				$w->set_tooltip_text( ::__x(_"Use {command} to play {ext} files",command=>$cmd, ext=>$ext{$ext}) );
 				$extgroup{$ext}||=$w;
 				$table->attach($w, $i,$i+1,$j,$j+1,'expand','expand',0,0);

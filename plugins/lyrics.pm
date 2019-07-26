@@ -18,7 +18,7 @@ use utf8;
 require $::HTTP_module;
 our @ISA;
 BEGIN {push @ISA,'GMB::Context';}
-use base 'Gtk2::VBox';
+use base 'Gtk3::VBox';
 use constant
 {	OPT	=> 'PLUGIN_LYRICS_', # MUST begin by PLUGIN_ followed by the plugin ID / package name
 };
@@ -119,11 +119,11 @@ sub Stop
 
 sub new
 {	my ($class,$options)=@_;
-	my $self = bless Gtk2::VBox->new(0,0), $class;
+	my $self = bless Gtk3::VBox->new(0,0), $class;
 	$options->{follow}=1 if not exists $options->{follow};
 	$self->{$_}=$options->{$_} for qw/HideToolbar follow group font justification edit/;
 
-	my $textview=Gtk2::TextView->new;
+	my $textview=Gtk3::TextView->new;
 	$self->signal_connect(map => sub { $_[0]->SongChanged( ::GetSelID($_[0]) ); });
 	$self->signal_connect_after(key_press_event	=> \&key_pressed_cb);
 	$textview->signal_connect(button_release_event	=> \&button_release_cb);
@@ -136,16 +136,16 @@ sub new
 	$textview->set_left_margin(5);
 	$textview->set_right_margin(5);
 	if (my $color= $options->{color} || $options->{DefaultFontColor})
-	{	$textview->modify_text('normal', Gtk2::Gdk::Color->parse($color) );
+	{	$textview->modify_text('normal', Gtk3::Gdk::Color->parse($color) );
 	}
 	$self->{buffer}=$textview->get_buffer;
 	$self->{textview}=$textview;
 	$self->{DefaultFocus}=$textview;
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type( $options->{shadow} || 'etched-in');
 	$sw->set_policy('automatic','automatic');
 	$sw->add($textview);
-	my $toolbar=Gtk2::Toolbar->new;
+	my $toolbar=Gtk3::Toolbar->new;
 	$toolbar->set_style( $options->{ToolbarStyle}||'both-horiz' );
 	$toolbar->set_icon_size( $options->{ToolbarSize}||'small-toolbar' );
 	for my $aref
@@ -154,7 +154,7 @@ sub new
 		[undef, 'gtk-refresh',	\&Refresh_cb,	_"Refresh"],
 	)
 	{	my ($key,$stock,$cb,$label,$tip)=@$aref;
-		my $item=Gtk2::ToolButton->new_from_stock($stock);
+		my $item=Gtk3::ToolButton->new_from_stock($stock);
 		$item->set_label($label);
 		$item->signal_connect(clicked => $cb);
 		$item->set_tooltip_text($tip) if $tip;
@@ -166,13 +166,13 @@ sub new
 	# create follow toggle button, function from GMB::Context
 	my $follow=$self->new_follow_toolitem;
 
-	$self->{editb}=my $editmode= Gtk2::ToggleToolButton->new_from_stock('gtk-edit');
+	$self->{editb}=my $editmode= Gtk3::ToggleToolButton->new_from_stock('gtk-edit');
 	$editmode->signal_connect(toggled=> sub { SetEditable($_[0],$_[0]->get_active); });
 	$editmode->set_tooltip_text(_"Edit mode");
 
-	my $adj= $self->{fontsize_adj}= Gtk2::Adjustment->new(10,4,80,1,5,0);
-	my $zoom=Gtk2::ToolItem->new;
-	my $zoom_spin=Gtk2::SpinButton->new($adj,1,0);
+	my $adj= $self->{fontsize_adj}= Gtk3::Adjustment->new(10,4,80,1,5,0);
+	my $zoom=Gtk3::ToolItem->new;
+	my $zoom_spin=Gtk3::SpinButton->new($adj,1,0);
 	$zoom->add($zoom_spin);
 	$zoom->set_tooltip_text(_"Font size");
 	my $source=::NewPrefCombo( OPT.'LyricSite', { map {$_=>$Sites{$_}[0]} keys %Sites} ,cb => \&Refresh_cb, toolitem=> _"Lyrics source");
@@ -207,14 +207,14 @@ sub cancel
 }
 
 sub prefbox
-{	my $vbox=Gtk2::VBox->new(::FALSE, 2);
+{	my $vbox=Gtk3::VBox->new(::FALSE, 2);
 	my $entry=::NewPrefEntry(OPT.'PathFile' => _"Lyrics file :", width=>30, tip=> _"Lyrics file name format" );
 	my $preview= Label::Preview->new(preview => \&filename_preview, event => 'CurSong Option', noescape=>1,wrap=>1);
 	my $autosave=::NewPrefCheckButton(OPT.'AutoSave' => _"Auto-save positive finds", tip=>_"only works with some lyrics source and when the lyrics tab is active");
 	my $embed=::NewPrefCombo(OPT.'PreferEmbeddedLyrics', { 0=> _"lyrics file", 1=> _"file tag"},
 		text=>_"Prefered place to load and save lyrics :");
 	my $alwaysload=::NewPrefCheckButton(OPT.'AlwaysLoad' => _"Load lyrics even if lyrics panel is hidden");
-	my $Bopen=Gtk2::Button->new(_"open context window");
+	my $Bopen=Gtk3::Button->new(_"open context window");
 	$Bopen->signal_connect(clicked => sub { ::ContextWindow; });
 	$vbox->pack_start($_,::FALSE,::FALSE,1) for $embed,$entry,$preview,$autosave,$alwaysload,$Bopen;
 	return $vbox;
@@ -263,11 +263,11 @@ sub SetFont
 	{	if ($newfont=~m/\D/ || !$font) { $font=$newfont }
 		else { $size=$newfont }
 	}
-	my $fontdesc=Gtk2::Pango::FontDescription->from_string($font);
-	$fontdesc->set_size( $size * Gtk2::Pango->scale ) if $size;
+	my $fontdesc=Pango::FontDescription->from_string($font);
+	$fontdesc->set_size( $size * Pango->scale ) if $size;
 
 	# update spin button
-	$size= $fontdesc->get_size / Gtk2::Pango->scale;
+	$size= $fontdesc->get_size / Pango->scale;
 	my $adj=$self->{fontsize_adj};
 	$adj->set_value( $size );
 
@@ -277,7 +277,7 @@ sub SetFont
 }
 sub ChooseFont
 {	my $self=shift;
-	my $dialog=Gtk2::FontSelectionDialog->new(_"Choose font for lyrics");
+	my $dialog=Gtk3::FontSelectionDialog->new(_"Choose font for lyrics");
 	$dialog->set_font_name( $self->{font} );
 	my $response= $dialog->run;
 	if ($response eq 'ok')
@@ -374,18 +374,18 @@ sub populate_popup_cb
 	# add menu items for links
 	my ($x,$y)=$textview->window_to_buffer_coords('widget',$textview->get_pointer);
 	if (my $url=$self->url_at_coords($x,$y))
-	{	my $item2=Gtk2::MenuItem->new(_"Open link in Browser");
+	{	my $item2=Gtk3::MenuItem->new(_"Open link in Browser");
 		$item2->signal_connect(activate => sub	{ ::openurl($url); });
-		my $item3=Gtk2::MenuItem->new(_"Copy link address");
+		my $item3=Gtk3::MenuItem->new(_"Copy link address");
 		$item3->signal_connect(activate => sub
 		{	my $url=$_[1];
-			my $clipboard=$_[0]->get_clipboard(Gtk2::Gdk::Atom->new('CLIPBOARD',1));
+			my $clipboard=$_[0]->get_clipboard(Gtk3::Gdk::Atom->new('CLIPBOARD',1));
 			$clipboard->set_text($url);
 		},$url);
-		$menu->prepend($_) for Gtk2::SeparatorMenuItem->new, $item3,$item2;
+		$menu->prepend($_) for Gtk3::SeparatorMenuItem->new, $item3,$item2;
 	}
 
-	$menu->append(Gtk2::SeparatorMenuItem->new);
+	$menu->append(Gtk3::SeparatorMenuItem->new);
 	::BuildMenu( \@ContextMenuAppend, { self=>$self, }, $menu );
 
 	$menu->show_all;
@@ -510,7 +510,7 @@ sub loaded #_very_ crude html to gtktextview renderer
 				}
 			elsif ($tag=~m/^h(\d)/i)
 				{ $prop{scale}=(3,2.5,2,1.5,1.2,1,.66)[$1];
-				  $prop{weight}=Gtk2::Pango::PANGO_WEIGHT_BOLD if $1 eq '1';
+				  $prop{weight}=Pango::PANGO_WEIGHT_BOLD if $1 eq '1';
 				}
 			elsif ($tag eq 'table') {$buffer->insert($iter,"\n");}
 			elsif ($tag eq 'img' && exists $p{src})
@@ -534,7 +534,7 @@ sub loaded #_very_ crude html to gtktextview renderer
 		}
 		elsif (m#^<(\w+)>$#)
 		{	if    ($1 eq 'u')	{$prop{underline}='single';}
-			elsif ($1 eq 'b')	{$prop{weight}=Gtk2::Pango::PANGO_WEIGHT_BOLD;}
+			elsif ($1 eq 'b')	{$prop{weight}=Pango::PANGO_WEIGHT_BOLD;}
 			elsif ($1 eq 'i')	{$prop{style}='italic';}
 			elsif ($1 eq 'title')	{$title=shift @l while $l[0] ne "</$1>"}
 		}
@@ -625,7 +625,7 @@ my %zoomkeymap;
 BEGIN { %zoomkeymap=( plus=>1, minus=>-1, KP_Add=>1, KP_Subtract=>-1 ); }
 sub key_pressed_cb
 {	my ($self,$event)=@_;
-	my $key=Gtk2::Gdk->keyval_name( $event->keyval );
+	my $key=Gtk3::Gdk->keyval_name( $event->keyval );
 	my $state=$event->get_state;
 	my $ctrl= $state * ['control-mask'] && !($state * [qw/mod1-mask mod4-mask super-mask/]); #ctrl and not alt/super
 	return 0 unless $ctrl; #only ctrl- shortcuts so far
@@ -700,7 +700,7 @@ sub update_cursor_cb
 	}
 	return if ($textview->{cursor}||'') eq $cursor;
 	$textview->{cursor}=$cursor;
-	$textview->get_window('text')->set_cursor(Gtk2::Gdk::Cursor->new($cursor));
+	$textview->get_window('text')->set_cursor(Gtk3::Gdk::Cursor->new($cursor));
 }
 
 sub load_from_file
@@ -730,7 +730,7 @@ sub load_from_file
 	}
 	$artist='(?:by\W+)?'.$artist if $artist;
 	if ($text && $text=~m#^\W*($title\W*\n?(?:$artist)?)\W*\n#si)
-	{ my $tag=$buffer->create_tag(undef,scale => 1.5,weight=>Gtk2::Pango::PANGO_WEIGHT_BOLD);
+	{ my $tag=$buffer->create_tag(undef,scale => 1.5,weight=>Pango::PANGO_WEIGHT_BOLD);
 	  $buffer->apply_tag($tag,$buffer->get_iter_at_offset($-[0]),$buffer->get_iter_at_offset($+[0]));
 	}
 

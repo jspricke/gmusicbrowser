@@ -490,7 +490,7 @@ sub RG_set_options
 
 sub AdvancedOptions
 {	my $self=$_[0];
-	my $vbox=Gtk2::VBox->new(::FALSE, 2);
+	my $vbox=Gtk3::VBox->new(::FALSE, 2);
 	my $modif_cb= sub { $self->{modif}=1 };
 	my $gapless= ::NewPrefCheckButton(gst_gapless => _"enable gapless (experimental)", cb=> $modif_cb);
 	$gapless->set_sensitive(0) unless $playbin2_ok;
@@ -500,7 +500,7 @@ sub AdvancedOptions
 	$monitor_volume->set_sensitive(0) unless $Glib::VERSION >= 1.251;
 	$vbox->pack_start($monitor_volume,::FALSE,::FALSE,2);
 
-	my $sg1=Gtk2::SizeGroup->new('horizontal');
+	my $sg1=Gtk3::SizeGroup->new('horizontal');
 	my $custom= ::NewPrefEntry(gst_custom => _"Custom pipeline", cb=>$modif_cb, sizeg1 => $sg1, expand => 1, tip => _"Insert this pipeline before the audio sink", history => 'gst_custom_history');
 	$vbox->pack_start($custom,::FALSE,::FALSE,2);
 	for my $s (sort grep $Sinks{$_}{ok} && $Sinks{$_}{option}, keys %Sinks)

@@ -491,7 +491,7 @@ sub RG_set_options
 
 sub AdvancedOptions
 {	my $self=shift;
-	my $vbox=Gtk2::VBox->new(::FALSE, 2);
+	my $vbox=Gtk3::VBox->new(::FALSE, 2);
 	my $modif_cb= sub { $self->{modif}=1 };
 	my $gapless= ::NewPrefCheckButton(gst_gapless => _"enable gapless (experimental)", cb=> $modif_cb);
 	$vbox->pack_start($gapless,::FALSE,::FALSE,2);
@@ -502,7 +502,7 @@ sub AdvancedOptions
 	my $sync_EQpresets= ::NewPrefCheckButton(gst_sync_EQpresets => _"Synchronize equalizer presets", cb=> sub { EQ_Import_Presets(); $modif_cb->() }, tip=>_"Imports gstreamer presets, and synchronize modifications made with gmusicbrowser");
 	$vbox->pack_start($sync_EQpresets,::FALSE,::FALSE,2);
 
-	my $sg1=Gtk2::SizeGroup->new('horizontal');
+	my $sg1=Gtk3::SizeGroup->new('horizontal');
 	my $custom= ::NewPrefEntry(gst_custom => _"Custom pipeline", cb=>$modif_cb, sizeg1 => $sg1, expand => 1, tip => _"Insert this pipeline before the audio sink", history => 'gst_custom_history');
 	$vbox->pack_start($custom,::FALSE,::FALSE,2);
 	for my $s (sort grep $Sinks{$_}{ok} && $Sinks{$_}{option}, keys %Sinks)

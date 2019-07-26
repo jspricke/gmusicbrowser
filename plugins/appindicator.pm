@@ -10,7 +10,7 @@
 name	App indicator
 title	App Indicator plugin
 desc	Displays a panel indicator in some desktops
-req	perl(Gtk2::AppIndicator, libgtk2-appindicator-perl perl-Gtk2-AppIndicator)
+req	perl(Gtk3::AppIndicator, libgtk2-appindicator-perl perl-Gtk3-AppIndicator)
 =cut
 
 package GMB::Plugin::AppIndicator;
@@ -20,7 +20,7 @@ use constant
 {	OPT	=> 'PLUGIN_AppIndicator_',
 };
 
-use Gtk2::AppIndicator;
+use Gtk3::AppIndicator;
 
 ::SetDefaultOptions(OPT, MiddleClick=>'playpause');
 
@@ -32,7 +32,7 @@ my %mactions= # action when middle-clicking on icon, must correspond to an id in
 my ($indicator,$iconpath);
 
 sub Start
-{	$indicator||=Gtk2::AppIndicator->new(::PROGRAM_NAME,'gmusicbrowser','application-status');
+{	$indicator||=Gtk3::AppIndicator->new(::PROGRAM_NAME,'gmusicbrowser','application-status');
 	# events that requires updating the traymenu :
 	::Watch($indicator, $_=> \&QueueUpdate) for qw/Lock Playing Windows/;
 	#::Watch($indicator, $_=> \&UpdateIcon) for qw/Playing Icons/; #FIXME needs initialization #deactivated because it can't work for now
@@ -45,9 +45,9 @@ sub Stop
 }
 
 sub prefbox
-{	my $vbox=Gtk2::VBox->new(::FALSE, 2);
+{	my $vbox=Gtk3::VBox->new(::FALSE, 2);
 	my $middleclick= ::NewPrefCombo(OPT.'MiddleClick', \%mactions, text => _"Middle-click action :", cb=>\&Update);
-	my $warning= Gtk2::Label->new_with_format("<i>%s</i>",_"(The middle-click action doesn't work correctly in some desktops)");
+	my $warning= Gtk3::Label->new_with_format("<i>%s</i>",_"(The middle-click action doesn't work correctly in some desktops)");
 	$vbox->pack_start($_,::FALSE,::FALSE,2) for $middleclick,$warning;
 	return $vbox;
 }
@@ -76,8 +76,8 @@ sub UpdateIcon
 	$indicator->set_icon_name_active($name);
 }
 
-#patch for typo in Gtk2::AppIndicator
-package Gtk2::AppIndicator;
+#patch for typo in Gtk3::AppIndicator
+package Gtk3::AppIndicator;
 sub set_secondary_activate_target {
         my $self=shift;
         my $widget=shift;

@@ -2195,7 +2195,7 @@ sub Get_list	#rarely used, keep ?
 }
 sub Get_icon_list
 {	my ($field,$ID)=@_;
-	my $func= $FuncCache{"icon_list $field"} ||= Compile("icon_list $field", MakeCode($field,'sub {grep Gtk2::IconFactory->lookup_default($_), map #icon_for_gid#, @{#get_gid#}; }',ID=>'$_[0]', GID=>'$_'));	#FIXME simplify the code-making process
+	my $func= $FuncCache{"icon_list $field"} ||= Compile("icon_list $field", MakeCode($field,'sub {grep Gtk3::IconFactory->lookup_default($_), map #icon_for_gid#, @{#get_gid#}; }',ID=>'$_[0]', GID=>'$_'));	#FIXME simplify the code-making process
 	return $func->($ID);
 }
 sub Gid_to_Display	#convert a gid from a Get_gid to a displayable value
@@ -2761,12 +2761,12 @@ sub GroupSub
 }
 
 sub PrefFields	#preference dialog for fields
-{	my $store=Gtk2::TreeStore->new('Glib::String','Glib::String','Glib::Boolean','Glib::Boolean','Glib::Boolean');
-	my $treeview=Gtk2::TreeView->new($store);
+{	my $store=Gtk3::TreeStore->new('Glib::String','Glib::String','Glib::Boolean','Glib::Boolean','Glib::Boolean');
+	my $treeview=Gtk3::TreeView->new($store);
 	$treeview->set_headers_visible(0);
-	my $rightbox=Gtk2::VBox->new;
-	my $renderer=Gtk2::CellRendererText->new;
-	$treeview->append_column( Gtk2::TreeViewColumn->new_with_attributes
+	my $rightbox=Gtk3::VBox->new;
+	my $renderer=Gtk3::CellRendererText->new;
+	$treeview->append_column( Gtk3::TreeViewColumn->new_with_attributes
 	 ( 'field name',$renderer,text => 0, editable => 2, sensitive=>3, strikethrough => 4,
 	 ));
 
@@ -2810,9 +2810,9 @@ sub PrefFields	#preference dialog for fields
 			$rightbox->remove($_) for $rightbox->get_children;
 			if ($field=~m/^\+/) {return} #row is a category
 			return unless $field;
-			my $title=Gtk2::Label->new_with_format("<b>%s</b>",$name);
+			my $title=Gtk3::Label->new_with_format("<b>%s</b>",$name);
 			$rightbox->pack_start($title,::FALSE,::FALSE,2);
-			my $box=Gtk2::VBox->new;
+			my $box=Gtk3::VBox->new;
 			::weaken( $box->{store}=$store );
 			$box->{path}=$path;
 			Field_fill_option_box($box,$field);
@@ -2825,7 +2825,7 @@ sub PrefFields	#preference dialog for fields
 		my ($oldname,$field)= $store->get($iter,0,1);
 		if ($newname eq '')
 		{	$store->remove($iter) if $oldname eq '';
-			$treeview->set_cursor(Gtk2::TreePath->new($custom_root));
+			$treeview->set_cursor(Gtk3::TreePath->new($custom_root));
 			return;
 		}
 		if ($field eq '')
@@ -2845,9 +2845,9 @@ sub PrefFields	#preference dialog for fields
 			$treeview->expand_to_path($path);
 			$treeview->set_cursor($path, $treeview->get_column(0), ::TRUE);
 		} );
-	my $warning=Gtk2::Label->new;
+	my $warning=Gtk3::Label->new;
 	$warning->set_markup('<b>'.::PangoEsc(_"Settings on this page will only take effect after a restart").'</b>');
-	my $sw=Gtk2::ScrolledWindow->new;
+	my $sw=Gtk3::ScrolledWindow->new;
 	$sw->set_shadow_type('etched-in');
 	$sw->set_policy('never','automatic');
 	$sw->add($treeview);
@@ -2930,7 +2930,7 @@ our %Field_options=
 	},
 	starpreview	=>
 	{	widget => sub
-		{	my @img= map Gtk2::Image->new, 0..2;
+		{	my @img= map Gtk3::Image->new, 0..2;
 			my $box= ::Hpack('-',reverse @img);
 			$box->{img}=\@img;
 			return $box;
@@ -3030,7 +3030,7 @@ sub Field_fill_option_box
 	my $option_list= ($template ? $FieldTemplates{$template}{options} : $def->{options}) ||'';
 	my $flags=	 ($template ? $FieldTemplates{$template}{flags} :   $def->{flags})   ||'';
 
-	my $sg1=Gtk2::SizeGroup->new('horizontal');
+	my $sg1=Gtk3::SizeGroup->new('horizontal');
 	my %widgets; my @topack;
 	$vbox->{FieldProperties}=1; #used to get back to $vbox from one of its (grand)child
 	$vbox->{widget_hash}=\%widgets;
@@ -3053,13 +3053,13 @@ sub Field_fill_option_box
 		{	($widget,@extra) = $widget->( $vbox, $opt, $field );
 		}
 		elsif ($widget eq 'check')
-		{	$widget= Gtk2::CheckButton->new($label);
+		{	$widget= Gtk3::CheckButton->new($label);
 			undef $label;
 			$widget->set_active($value);
 			$widget->signal_connect(toggled => sub { $opt->{$key}= $_[0]->get_active ? 1 : 0; &Field_Edit_update });
 		}
 		elsif ($widget eq 'entry')
-		{	$widget= Gtk2::Entry->new;
+		{	$widget= Gtk3::Entry->new;
 			$widget->set_text($value);
 			$widget->signal_connect(changed => sub { my $t=$_[0]->get_text; if ($t=~m/^\s*$/) {delete $opt->{$key};} else {$opt->{$key}=$t;} &Field_Edit_update });
 		}
@@ -3067,7 +3067,7 @@ sub Field_fill_option_box
 		{	$widget= TextCombo->new( $ref->{combo}, $value, sub { $opt->{$key}=$_[0]->get_value; &Field_Edit_update });
 		}
 		elsif ($widget eq 'label')
-		{	$widget= Gtk2::Label->new($label);
+		{	$widget= Gtk3::Label->new($label);
 			undef $label;
 		}
 		next unless $widget;
@@ -3077,7 +3077,7 @@ sub Field_fill_option_box
 		$widgets{$option}=$widget;
 
 		if (defined $label)
-		{	$label= Gtk2::Label->new($label);
+		{	$label= Gtk3::Label->new($label);
 			$sg1->add_widget($label);
 			$widget= [ $label, '_',$widget ];
 		}
@@ -3090,22 +3090,22 @@ sub Field_fill_option_box
 		$varnames.=', %'.$def->{letter} if $def->{letter};
 		my $label_var=    _("Can be used as a variable with :").' '.$varnames;
 		my $label_search= _("Can be searched with :").' '.join(', ',@idlist);
-		$_= Gtk2::Label->new($_) for $label_var,$label_search;
+		$_= Gtk3::Label->new($_) for $label_var,$label_search;
 		$_->set_selectable(1) , $_->set_alignment(0,.5) , $_->set_line_wrap(1) for $label_var,$label_search;
 		unshift @topack, $label_var if $varnames;
 		unshift @topack, $label_search if @idlist && $flags=~m/f/;
 	}
-	unshift @topack, Gtk2::Label->new( $def->{desc} ) if $def->{desc};
+	unshift @topack, Gtk3::Label->new( $def->{desc} ) if $def->{desc};
 
-	{	my $hbox= Gtk2::HBox->new;
-		my $label1= Gtk2::Label->new(_("Field identifier").':');
-		my $label_id= Gtk2::Label->new($field);
+	{	my $hbox= Gtk3::HBox->new;
+		my $label1= Gtk3::Label->new(_("Field identifier").':');
+		my $label_id= Gtk3::Label->new($field);
 		$hbox->pack_start($_,0,0,2) for $label1,$label_id;
 		if ($template) #custom fields can be renamed
-		{	my $entry= Gtk2::Entry->new;
-			my $bedit= Gtk2::Button->new(_"Edit");
-			my $brename= Gtk2::Button->new(_"Rename");
-			my $bcancel= Gtk2::Button->new(_"Cancel");
+		{	my $entry= Gtk3::Entry->new;
+			my $bedit= Gtk3::Button->new(_"Edit");
+			my $brename= Gtk3::Button->new(_"Rename");
+			my $bcancel= Gtk3::Button->new(_"Cancel");
 			$hbox->pack_start($_,0,0,2) for $entry,$bedit,$brename,$bcancel;
 			my @edit=($entry,$brename,$bcancel);
 			$hbox->{edit}= \@edit;
@@ -3147,7 +3147,7 @@ sub Field_fill_option_box
 			  $flags!~m/[rw]/ ? _"Value not written in file tag" :
 			  undef;
 		$text=undef if $field eq 'path' || $field eq 'file';
-		unshift @topack, Gtk2::Label->new_with_format( '<small>%s</small>', $text ) if $text;
+		unshift @topack, Gtk3::Label->new_with_format( '<small>%s</small>', $text ) if $text;
 	}
 
 	$vbox->add( ::Vpack(@topack) );
@@ -3177,7 +3177,7 @@ sub Field_Edit_template
 {	my ($vbox,$opt,$field)=@_;
 	my %templatelist;
 	$templatelist{$_}= $FieldTemplates{$_}{editname} for keys %FieldTemplates;
-	my $label= Gtk2::Label->new;
+	my $label= Gtk3::Label->new;
 	my $combo= TextCombo->new(\%templatelist, $opt->{template}, sub
 		{	my $combo=shift;
 			my $t=$opt->{template}= $combo->get_value;
@@ -4162,7 +4162,7 @@ sub _staticfy
 
 
 package GMB::ListStore::Field;
-use base 'Gtk2::ListStore';
+use base 'Gtk3::ListStore';
 
 our %ExistingStores;
 
@@ -4170,7 +4170,7 @@ sub new
 {	my ($class,$field)=@_; #warn "creating new store for $field\n";
 	my @cols=('Glib::String');
 	push @cols, 'Glib::String' if $Songs::Def{$field}{icon}; #FIXME
-	my $self= bless Gtk2::ListStore->new(@cols), $class;
+	my $self= bless Gtk3::ListStore->new(@cols), $class;
 	$ExistingStores{$field}= $self;
 	::weaken $ExistingStores{$field};
 	::IdleDo("9_ListStore_$field",500,\&update,$field);
@@ -4184,10 +4184,10 @@ sub getstore
 }
 sub setcompletion
 {	my ($entry,$field)=@_;
-	my $completion=Gtk2::EntryCompletion->new;
+	my $completion=Gtk3::EntryCompletion->new;
 	$completion->set_text_column(0);
 	if ($Songs::Def{$field}{icon}) #FIXME
-	{	my $cell=Gtk2::CellRendererPixbuf->new;
+	{	my $cell=Gtk3::CellRendererPixbuf->new;
 		$completion->pack_start($cell,0);
 		$completion->add_attribute($cell,'stock-id',1);
 	}
@@ -4218,20 +4218,20 @@ sub update
 }
 
 package GMB::ListStore::Field::Combo;
-use base 'Gtk2::ComboBox';
+use base 'Gtk3::ComboBox';
 
 sub new
 {	my ($class,$field,$init,$callback)=@_;
 	my $store= GMB::ListStore::Field::getstore($field);
-	my $self= bless Gtk2::ComboBox->new_with_model($store), $class;
+	my $self= bless Gtk3::ComboBox->new_with_model($store), $class;
 
 	if ($Songs::Def{$field}{icon})
-	{	my $cell=Gtk2::CellRendererPixbuf->new;
-		$cell->set_fixed_size( Gtk2::IconSize->lookup('menu') ); # fixed size => icon or empty space
+	{	my $cell=Gtk3::CellRendererPixbuf->new;
+		$cell->set_fixed_size( Gtk3::IconSize->lookup('menu') ); # fixed size => icon or empty space
 		$self->pack_start($cell,0);
 		$self->set_attributes($cell,stock_id=>1);
 	}
-	my $cell=Gtk2::CellRendererText->new;
+	my $cell=Gtk3::CellRendererText->new;
 	#$cell->set(wrap_width=>500);
 	#$cell->set(ellipsize=>'end');
 	$self->pack_start($cell,1);

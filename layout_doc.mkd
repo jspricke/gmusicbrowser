@@ -349,7 +349,7 @@ Example : `Title(tip="last played : $lastplay")`
 #### `cursor` option
 Another common option, it is used to change the mouse cursor when it hovers over the widget.  
 Example : `Play(cursor=hand2)`  
-See [this page](http://gtk2-perl.sourceforge.net/doc/pod/Gtk2/Gdk/Cursor.html#enum_Gtk2_Gdk_Cursor) for a list of cursor names.
+See [this page](http://gtk2-perl.sourceforge.net/doc/pod/Gtk3/Gdk/Cursor.html#enum_Gtk3_Gdk_Cursor) for a list of cursor names.
 
 #### `hover_layout` option
 Many widgets and containers can use the `hover_layout=ALayoutName` option. It causes a window using the ALayoutName layout to pop-up when the mouse hover on the widget (for more than 1000ms, or the value set by the hover_delay option, use 1000ms if set to 0). The popped-up window disappear when the mouse exit the window.  
@@ -434,7 +434,7 @@ markup : can be used to re-define the text displayed, you can use [%-letters and
  - Choose : Button to open a search window
  - Button	: custom button (other buttons can use these options too)
     - text or label : text in the button
-    - stock : icon name, see `/usr/share/gmusicbrowser/pix/` or [Gtk2 Stock-Items](http://developer.gnome.org/doc/API/2.0/gtk/gtk-Stock-Items.html) or `~/.config/gmusicbrowser/icons/` (without filename extension)
+    - stock : icon name, see `/usr/share/gmusicbrowser/pix/` or [Gtk3 Stock-Items](http://developer.gnome.org/doc/API/2.0/gtk/gtk-Stock-Items.html) or `~/.config/gmusicbrowser/icons/` (without filename extension)
  - ExtraButtons : placeholder for extra buttons provided by plugins or activated in the preferences. Options are passed to the buttons, generic button options such as size and relief should work, example: `HButtons= Play Stop ExtraButtons` or `HButtons= Play(size=menu) Stop(size=menu) ExtraButtons(size=menu)`
 
 The OpenContext, OpenBrowser and OpenQueue buttons accept the option 'toggle', if true (=1) the button will close the opened window if it is already opened
@@ -534,7 +534,7 @@ indicators (Filter Queue Sort ...) and some buttons (Play Next Prev Stop Quit ..
  - Visuals : Display a sound visualisation, only with gstreamer
  - QueueActions : combobox to change the queued action
  - ToggleButton : Show/Hide other widget(s)
-    - icon : icon name, see `/usr/share/gmusicbrowser/pix/` or [Gtk2 Stock-Items](http://developer.gnome.org/doc/API/2.0/gtk/gtk-Stock-Items.html) or `~/.config/gmusicbrowser/icons/` (without filename extension)
+    - icon : icon name, see `/usr/share/gmusicbrowser/pix/` or [Gtk3 Stock-Items](http://developer.gnome.org/doc/API/2.0/gtk/gtk-Stock-Items.html) or `~/.config/gmusicbrowser/icons/` (without filename extension)
     - text : button text
     - widget : list of widgets/containers separated by `|`
     - resize : String of `h`,`v` or `_`, one by hidden widget : shrink the window vertically (v) or horizontally (h) when each widget is hidden
