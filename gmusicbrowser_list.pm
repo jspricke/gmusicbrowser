@@ -196,8 +196,8 @@ sub Update
 	if (!$array)	{ $tip=$text=_"error"; }
 	else		{ $text.= ::CalcListLength($array,$self->{format}); }
 	my $format= $self->{size} ? '<span size="'.$self->{size}.'">%s</span>' : '%s';
-	if ($self->{mode} eq "filter") { $self->child->set_markup_with_format($format,$text); $self->set_tooltip_text($tip); }
-	else	{	$self->child->set_markup_with_format($format,$tip); $self->set_tooltip_text($text); }
+	if ($self->{mode} eq "filter") { $self->get_child->set_markup_with_format($format,$text); $self->set_tooltip_text($tip); }
+	else	{	$self->get_child->set_markup_with_format($format,$tip); $self->set_tooltip_text($text); }
 	$self->{needupdate}=0;
 }
 
@@ -962,7 +962,7 @@ sub new
 sub SaveOptions
 {	my $self=shift;
 	my %opt;
-	my $tv=$self->child;
+	my $tv=$self->get_child;
 	#save displayed cols
 	$opt{cols}=join ' ',(map $_->{colid},$tv->get_columns);
 	#save their width
@@ -1008,7 +1008,7 @@ sub AddColumn
 			$s='-'.$s if $self->{sort} eq $s;
 			$self->Sort($s);
 		},$prop->{sort}) if defined $prop->{sort};
-	my $tv=$self->child;
+	my $tv=$self->get_child;
 	if (defined $pos)	{ $tv->insert_column($column, $pos); }
 	else			{ $tv->append_column($column); }
 	#################################### connect col selection menu to right-click on column
@@ -1032,7 +1032,7 @@ sub AddColumn
 
 sub UpdateSortIndicator
 {	my $self=$_[0];
-	my $tv=$self->child;
+	my $tv=$self->get_child;
 	$_->set_sort_indicator(FALSE) for grep $_->get_sort_indicator, $tv->get_columns;
 	return if $self->{no_sort_indicator};
 	if ($self->{sort}=~m/^(-)?([^ ]+)$/)
@@ -1070,7 +1070,7 @@ sub ToggleColumn
 	$self->{cols_to_watch}=undef; #to force update list of columns to watch
 }
 
-sub set_has_tooltip { $_[0]->child->set_has_tooltip($_[1]) }
+sub set_has_tooltip { $_[0]->get_child->set_has_tooltip($_[1]) }
 
 sub expose_cb
 {	my ($tv,$event)=@_;
@@ -1156,7 +1156,7 @@ sub drag_motion_cb
 
 sub sel_changed_cb
 {	my $treesel=$_[0];
-	my $group=$treesel->get_tree_view->parent->{group};
+	my $group=$treesel->get_tree_view->get_parent->{group};
 	::IdleDo('1_Changed'.$group,10, \&::HasChanged, 'Selection_'.$group);	#delay it, because it can be called A LOT when, for example, removing 10000 selected rows
 }
 sub cursor_changed_cb
@@ -1176,7 +1176,7 @@ sub row_activated_cb
 
 sub ResetModel
 {	my $self=$_[0];
-	my $tv=$self->child;
+	my $tv=$self->get_child;
 	$tv->set_model(undef);
 	$self->{store}{size}=@{$self->{array}};
 	$tv->set_model($self->{store});
@@ -1202,7 +1202,7 @@ sub Scroll_to_TopEnd
 	return unless @$songarray;
 	my $row= $end ? $#$songarray : 0;
 	$row=Gtk3::TreePath->new($row);
-	$self->child->scroll_to_cell($row,undef,::TRUE,0,0);
+	$self->get_child->scroll_to_cell($row,undef,::TRUE,0,0);
 }
 
 sub CurSongChanged
@@ -1214,7 +1214,7 @@ sub CurSongChanged
 sub SongsChanged_cb
 {	my ($self,$IDs,$fields)=@_;
 	my $usedfields= $self->{cols_to_watch}||= do
-	 {	my $tv=$self->child;
+	 {	my $tv=$self->get_child;
 		my %h;
 		for my $col ($tv->get_columns)
 		{	if (my $d= $SLC_Prop{ $col->{colid} }{depend})
@@ -1239,7 +1239,7 @@ sub SongArray_changed_cb
 	#}
 	return unless $self->{array}==$array;
 	warn "SongArray_changed $action,@extra\n" if $::debug;
-	my $tv=$self->child;
+	my $tv=$self->get_child;
 	my $store=$tv->get_model;
 	my $treesel=$tv->get_selection;
 	my @selected=map $_->to_string, $treesel->get_selected_rows;
@@ -1330,7 +1330,7 @@ sub SongArray_changed_cb
 
 sub FollowSong
 {	my $self=$_[0];
-	my $tv=$self->child;
+	my $tv=$self->get_child;
 	#$tv->get_selection->unselect_all;
 	my $songarray=$self->{array};
 	return unless defined $::SongID;
@@ -2083,7 +2083,7 @@ sub update_children
 sub refresh_current_page
 {	my $self=shift;
 	delete $::ToDo{'9_FP'.$self};
-	my ($current)=grep $_->mapped, $self->get_field_pages;
+	my ($current)=grep $_->get_mapped, $self->get_field_pages;
 	if ($current) { $current->Fill }	# update now if page is displayed
 }
 sub get_field_pages
@@ -4771,7 +4771,7 @@ sub button_press_cb
 		{	$self->key_selected($event,$i,$j);
 		}
 		my $menu = ::ChooseSongsFromA($key);
-		my $event = Gtk2->get_current_event;
+		my $event = Gtk3->get_current_event;
 		$menu->show_all;
 		$menu->popup(undef,undef,undef,undef,$event->button,$event->time);
 	}
@@ -4957,7 +4957,7 @@ use constant
 sub new
 {	my ($class,$selectsub,$getdatasub,$activatesub,$menupopupsub,$field,$vscroll)=@_;
 	my $self = bless Gtk3::DrawingArea->new, $class;
-	$self->can_focus(::TRUE);
+	$self->set_can_focus(::TRUE);
 	$self->add_events(['pointer-motion-mask','leave-notify-mask']);
 	$self->{vscroll}=$vscroll;
 	$vscroll->get_adjustment->signal_connect(value_changed => \&scroll,$self);
@@ -4993,7 +4993,7 @@ sub reset_selection
 
 sub Fill
 {	my ($self,$samelist)=@_;
-	my $window=$self->window;
+	my $window=$self->get_window;
 	my ($width,$height)=$window->get_size;
 	if ($width<2 && !$self->{delayed}) { $self->{delayed}=1; ::IdleDo('2_resizemosaic'.$self,100,\&Fill,$self);return}
 	delete $self->{delayed};
@@ -5103,7 +5103,7 @@ sub show_tooltip
 	$self->{tooltip_t}=Glib::Timeout->add(5000, \&abort_tooltip,$self);
 
 	my ($window,$px,$py)=Gtk3::Gdk::Display->get_default->get_window_at_pointer;
-	return 0 unless $window && $window==$self->window;
+	return 0 unless $window && $window==$self->get_window;
 	my ($i,$j,$key)=$self->coord_to_index($px,$py);
 	return 0 unless defined $key;
 	my $win=$self->{tooltip_w}=Gtk3::Window->new('popup');
@@ -5727,7 +5727,7 @@ sub new
 	$vbox->pack_start($self->{headers},0,0,0) if $self->{headers};
 	$vbox->pack_end($self->{isearchbox},0,0,0);
 	$vbox->add($view);
-	$view->can_focus(::TRUE);
+	$view->set_can_focus(::TRUE);
 	$self->{DefaultFocus}=$view;
 	$self->{$_}->signal_connect(value_changed => sub {$self->has_scrolled($_[1])},$_) for qw/hadj vadj/;
 	$self->signal_connect(scroll_event	=> \&scroll_event_cb);
@@ -5765,7 +5765,7 @@ sub new
 		my $qactions = Layout::NewWidget("QueueActions");
 		my $clearb = ::NewIconButton('gtk-clear',"",\&::ClearQueue,"none","Clear Queue");
 		my $shuffleb = ::NewIconButton('gmb-shuffle',"",\&::ShuffleQueue,"none","Shuffle Queue");
-		my $bbox = Gtk2::HBox->new(0,0);
+		my $bbox = Gtk3::HBox->new(0,0);
 		$bbox->pack_start($qactions,0,0,0);
 		$bbox->pack_end($clearb,0,0,0);
 		$bbox->pack_end($shuffleb,0,0,0);
@@ -6247,12 +6247,12 @@ sub expose_cb
 	my $expose=$event->area;
 	my ($exp_x1,$exp_y1,$exp_x2,$exp_y2)=$expose->values;
 	$exp_x2+=$exp_x1; $exp_y2+=$exp_y1;
-	my $window=$view->window;
+	my $window=$view->get_window;
 	my $style=Gtk3::Rc->get_style_by_paths($self->{stylewidget}->get_settings, '.GtkTreeView', '.GtkTreeView','Gtk3::TreeView')
 		|| Gtk3::Rc->get_style($self->{stylewidget})
 		|| $self->get_style;
 	$style=$style->attach($window);
-	my $nstate= $self->state eq 'insensitive' ? 'insensitive' : 'normal';
+	my $nstate= $self->get_state eq 'insensitive' ? 'insensitive' : 'normal';
 	my $sstate=$view->has_focus ? 'selected' : 'active';
 	$self->{stylewidget}->has_focus($view->has_focus); #themes engine check if the widget has focus
 	my $selected=	\$self->{selected};
@@ -6268,8 +6268,8 @@ sub expose_cb
 		return 1;
 	}
 
-	my $xadj=int $self->{hadj}->value;
-	my $yadj=int $self->{vadj}->value;
+	my $xadj=int $self->{hadj}->get_value;
+	my $yadj=int $self->{vadj}->get_value;
 	my @next;
 	my ($depth,$i)=(0,1);
 	my ($x,$y)=(0-$xadj, 0-$yadj);
@@ -7018,7 +7018,7 @@ sub update
 	return if $self->{busy};
 	my $songtree=::find_ancestor($self,'SongTree');
 	#return unless $songtree->{ready};
-	$self->remove($self->child) if $self->child;
+	$self->remove($self->get_child) if $self->get_child;
 	my $hbox=Gtk3::HBox->new(0,0);
 	$self->add($hbox);
 
@@ -7098,7 +7098,7 @@ sub button_expose_cb
 		|| Gtk3::Rc->get_style($button->{stylewidget});
 	$style=$style->attach($button->window);
 	$style->paint_box($button->window,$button->state,'out',$event->area,$button->{stylewidget},'button',$button->allocation->values);
-	$button->propagate_expose($button->child,$event) if $button->child;
+	$button->propagate_expose($button->get_child,$event) if $button->get_child;
 	if ($button->{colid})
 	{	_create_dragwin($button) unless $button->{dragwin};
 		#$button->{dragwin}->raise;

@@ -1283,7 +1283,7 @@ sub Find_star_pictures
 
 sub LoadIcons
 {	my %icons;
-	unless (Gtk3::Stock->lookup('gtk-fullscreen'))	#for gtk version 2.6
+	unless (Gtk3::stock_lookup('gtk-fullscreen'))	#for gtk version 2.6
 	{ $icons{'gtk-fullscreen'}=PIXPATH.'fullscreen.png';
 	}
 
@@ -1749,7 +1749,7 @@ sub get_layout_widget
 sub find_ancestor
 {	my ($widget,$class)=@_;
 	until ( $widget->isa($class) )
-	{	$widget= $widget->isa('Gtk3::Menu')? $widget->get_attach_widget : $widget->parent;
+	{	$widget= $widget->isa('Gtk3::Menu')? $widget->get_attach_widget : $widget->get_parent;
 		#warn "Can't find ancestor $class of widget $_[0]\n" unless $widget;
 		return undef unless $widget;
 	}

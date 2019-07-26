@@ -1053,7 +1053,7 @@ sub CreateWidgets
 				}
 			};
 			if ($widget)
-			{	if ($widget->parent) {warn "layout error: $name already has a parent -> can't put it in $key\n"; next;}
+			{	if ($widget->get_parent) {warn "layout error: $name already has a parent -> can't put it in $key\n"; next;}
 				$type->{Pack}( $box,$widget,$packoptions );
 			}
 			elsif ($placeholder)
@@ -1091,7 +1091,7 @@ sub CreateWidgets
 	for my $widget (values %$widgets) { my $postinit= delete $widget->{PostInit}; $postinit->($widget) if $postinit; }
 
 	$self->{layoutdepth}--;
-	my @noparentboxes=grep m/^(?:[HV][BP]|[AMETNFSW]B|FR)/ && !$widgets->{$_}->parent, keys %$boxes;
+	my @noparentboxes=grep m/^(?:[HV][BP]|[AMETNFSW]B|FR)/ && !$widgets->{$_}->get_parent, keys %$boxes;
 	if	(@noparentboxes==0) {warn "layout empty ('$self->{layout}')\n"; return;}
 	elsif	(@noparentboxes!=1) {warn "layout error: (@noparentboxes) have no parent -> can't find toplevel box\n"}
 	return $widgets->{ $noparentboxes[0] };
@@ -1343,7 +1343,7 @@ sub GetShowHideState
 	for my $name ( split /\|/,$names )
 	{	my $widget=$self->{widgets}{$name};
 		next unless $widget;
-		$hidden++ unless $widget->visible;
+		$hidden++ unless $widget->get_visible;
 	}
 	return !$hidden;
 }
@@ -1422,7 +1422,7 @@ sub TurnPagesToWidget #change the current page of all parent notebook so that wi
 {	my $parent=$_[0];
 	while (1)
 	{	my $child=$parent;
-		$parent=$child->parent;
+		$parent=$child->get_parent;
 		last unless $parent;
 		if ($parent->isa('Gtk3::Notebook'))
 		 { $parent->set_current_page($parent->page_num($child)); }
@@ -1779,7 +1779,7 @@ sub init
 		}
 		else { warn "no Cairo perl module => can't make the window transparent\n" }
 	}
-	$self->child->show_all;		#needed to get the true size of the window
+	$self->get_child->show_all;		#needed to get the true size of the window
 	$self->realize;
 	$self->Resize if $self->{size};
 	{	my @hidden;
@@ -1898,7 +1898,7 @@ sub Resize
 	my ($w,$h)= split 'x',delete $self->{size};
 	return unless defined $h;
 	my $screen=$self->get_screen;
-	my $monitor=$screen->get_monitor_at_window($self->window);
+	my $monitor=$screen->get_monitor_at_window($self->get_window);
 	my (undef,undef,$monitorwidth,$monitorheight)=$screen->get_monitor_geometry($monitor)->values;
 	$w= $1*$monitorwidth/100 if $w=~m/(\d+)%/;
 	$h= $1*$monitorheight/100 if $h=~m/(\d+)%/;
@@ -2382,8 +2382,8 @@ sub PanedPack
 {	my ($paned,$wg,$opt)=@_;
 	my $expand= $opt=~m/_/;
 	my $shrink= $opt!~m/\+/;
-	if	(!$paned->child1)	{$paned->pack1($wg,$expand,$shrink);}
-	elsif	(!$paned->child2)	{$paned->pack2($wg,$expand,$shrink);}
+	if	(!$paned->get_child1)	{$paned->pack1($wg,$expand,$shrink);}
+	elsif	(!$paned->get_child2)	{$paned->pack2($wg,$expand,$shrink);}
 	else {warn "layout error : trying to pack more than 2 widgets in a paned container\n"}
 }
 
@@ -3198,7 +3198,7 @@ sub set_label
 	$_[0]->checksize;
 }
 sub set_markup
-{	my $label=$_[0]->child; $label->set_markup($_[1]); $label->{dx}=0;
+{	my $label=$_[0]->get_child; $label->set_markup($_[1]); $label->{dx}=0;
 	$_[0]->checksize;
 }
 sub set_markup_with_format
@@ -3208,7 +3208,7 @@ sub set_markup_with_format
 sub checksize	#extend the requested size so that the string fit in initsize mode (in case the initsize string is not wide enough)
 {	my $self=$_[0];
 	if ($self->{resize})
-	{	my $label=$self->child;
+	{	my $label=$self->get_child;
 		my ($w,$h)=$label->get_layout->get_pixel_size;
 		my ($w0,$h0)=$label->get_size_request;
 		$w=0 if $w0>$w;
@@ -3217,7 +3217,7 @@ sub checksize	#extend the requested size so that the string fit in initsize mode
 	}
 	elsif (my $emax=$self->{expand_max})
 	{	# make it expand up to min(maxwidth,string_width)
-		my $label=$self->child;
+		my $label=$self->get_child;
 		$label->get_layout->set_width($emax * Pango->scale) if $label->get_ellipsize ne 'none';
 		my ($w)= $label->get_layout->get_pixel_size;
 		$w=$emax if $emax>0 && $emax < $w;
@@ -5728,7 +5728,7 @@ sub size_allocate
 	my $spacing=$self->get_spacing;
 	my @children;
 	for my $child ($self->get_children)
-	{	next unless $child->visible;
+	{	next unless $child->get_visible;
 		my $xreq=$vertical ? $child->size_request->height : $child->size_request->width;
 		my ($expand,$fill,$pad,$type)=	($Gtk3::VERSION<1.163 || $Gtk3::VERSION==1.170) ?	 #work around memory leak in query_child_packing (gnome bug #498334)
 			@{$child->{SBOX_packoptions}} : $self->query_child_packing($child);
