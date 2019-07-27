@@ -178,17 +178,17 @@ sub new
 	$toolbar->set_style( $options->{ToolbarStyle}||'both-horiz' );
 	$toolbar->set_icon_size( $options->{ToolbarSize}||'small-toolbar' );
 	#$toolbar->set_show_arrow(1);
-	my $radiogroup; my $menugroup;
+	my $radiogroup = ""; my $menugroup;
 	foreach my $key (sort keys %sites)
 	{	my $item = $sites{$key}[1];
-		$item = Gtk3::RadioButton->new($radiogroup,$item);
+		$item = Gtk3::RadioButton->new_with_label($radiogroup,$item);
 		$item->{key} = $key;
 		$item -> set_mode(0); # display as togglebutton
 		$item -> set_relief("none");
 		$item -> set_tooltip_text($sites{$key}[2]);
 		$item->set_active( $key eq $self->{site} );
 		$item->signal_connect(toggled => sub { my $self=::find_ancestor($_[0],__PACKAGE__); toggled_cb($self,$item,$textview); } );
-		$radiogroup = $item -> get_group;
+		$radiogroup = $item;
 		my $toolitem=Gtk3::ToolItem->new;
 		$toolitem->add( $item );
 		$toolitem->set_expand(1);
