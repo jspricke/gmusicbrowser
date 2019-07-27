@@ -1302,9 +1302,9 @@ sub Hide
 	{	my $widget=$self->{widgets}{$name};
 		$r=shift @resize if @resize;
 		next unless $widget;# && $widget->visible;
-		my $alloc=$widget->allocation;
-		my $w=$alloc->width;
-		my $h=$alloc->height;
+		my $alloc=Gtk3::Widget::get_allocation($widget);
+		my $w=$alloc->{'width'};
+		my $h=$alloc->{'height'};
 		$self->{hidden}{$name}=$w.'x'.$h;
 		if ($r)
 		{	if	($r eq 'v')	{$wh-=$h}
@@ -3675,8 +3675,8 @@ sub LoadImg
 sub size_allocate_cb
 {	my ($self,$alloc)=@_;
 	my $ratio=$self->{ratio};
-	my $w=$alloc->width;
-	my $h=$alloc->height;
+	my $w=$alloc->{'width'};
+	my $h=$alloc->{'height'};
 	if (my $max=$self->{maxsize})
 	{	$w=$max if $w>$max;
 		$h=$max if $h>$max;
@@ -3703,7 +3703,11 @@ sub size_allocate_cb
 
 sub expose_cb
 {	my ($self,$event)=@_;
-	my ($x,$y,$ww,$wh)=$self->allocation->values;
+	my $allocation = Gtk3::Widget::get_allocation($event);
+	my $x=$allocation->{'x'};
+	my $y=$allocation->{'y'};
+	my $ww=$allocation->{'width'};
+	my $wh=$allocation->{'height'};
 	my $pixbuf= $self->{pixbuf};
 	return 1 unless $pixbuf;
 	my $w=$pixbuf->get_width;
@@ -5833,9 +5837,20 @@ sub size_allocate
 		$pad+=($wwf-$ww)/2;
 		if ($end)	{ $wx=$xend-$pad-$ww;   $xend-=$totalw; }
 		else		{ $wx=$x+$pad;		   $x+=$totalw; }
-		my $wa= $vertical ?
-			Gtk3::Gdk::Rectangle->new($y, $wx, $bheight, $ww):
-			Gtk3::Gdk::Rectangle->new($wx, $y, $ww, $bheight);
+		my $wa;
+		if ($vertical) {
+			$wa = Cairo::RectangleInt->new();
+			$wa->{x} = $y;
+			$wa->{y} = $wx;
+			$wa->{width} = $bheight;
+			$wa->{height} = $ww;
+		} else {
+			$wa = Cairo::RectangleInt->new();
+			$wa->{x} = $wx;
+			$wa->{y} = $y;
+			$wa->{width} = $ww;
+			$wa->{height} = $bheight;
+		}
 		$child->size_allocate($wa);
 	}
 }

@@ -688,7 +688,8 @@ sub DrawEmpty
 	$markup ||= $self->{markup_empty};
 	if ($markup)
 	{	$markup=~s#(?:\\n|<br>)#\n#g;
-		my ($width,$height)=$window_size->get_size;
+		my $width=$window_size->get_width();
+		my $height=$window_size->get_height();
 		my $layout= Pango::Layout->new( $self->create_pango_context );
 		$width-=2*5;
 		$layout->set_width( Pango->scale * $width );
@@ -6249,8 +6250,11 @@ sub key_press_cb
 sub expose_cb
 {	my ($view,$event)=@_;# my $time=times;
 	my $self=::find_ancestor($view,__PACKAGE__);
-	my $expose=$event->area;
-	my ($exp_x1,$exp_y1,$exp_x2,$exp_y2)=$expose->values;
+	my $expose = Gtk3::Widget::get_allocation($event);
+	my $exp_x1=$expose->{'x'};
+	my $exp_y1=$expose->{'y'};
+	my $exp_x2=$expose->{'width'};
+	my $exp_y2=$expose->{'height'};
 	$exp_x2+=$exp_x1; $exp_y2+=$exp_y1;
 	my $window=$view->get_window;
 	my $style=Gtk3::Rc->get_style_by_paths($self->{stylewidget}->get_settings, '.GtkTreeView', '.GtkTreeView','Gtk3::TreeView')
