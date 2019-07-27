@@ -27,33 +27,6 @@ use Glib qw/filename_from_unicode filename_to_unicode/;
 use Pango; #for Pango::Weight->bold, Pango::Weight->normal
 use POSIX qw/setlocale LC_NUMERIC LC_MESSAGES LC_TIME strftime mktime getcwd _exit/;
 use Encode qw/_utf8_on _utf8_off/;
-{no warnings 'redefine'; #some work arounds for old versions of perl-Gtk3 and/or gtk2
- *filename_to_utf8displayname=\&Glib::filename_display_name if *Glib::filename_display_name{CODE};
- *PangoEsc=\&Glib::Markup::escape_text if *Glib::Markup::escape_text{CODE}; #needs perl-Gtk3 version >=1.092
- *Gtk3::Notebook::set_tab_reorderable=	sub {} unless *Gtk3::Notebook::set_tab_reorderable{CODE};
- *Gtk3::AboutDialog::set_url_hook=	sub {} unless *Gtk3::AboutDialog::set_url_hook{CODE};	#for perl-Gtk3 version <1.080~1.083
- *Gtk3::Label::set_ellipsize=		sub {} unless *Gtk3::Label::set_ellipsize{CODE};	#for perl-Gtk3 version <1.080~1.083
- *Pango::Layout::set_height=	sub {} unless *Pango::Layout::set_height{CODE};	#for perl-Gtk3 version <1.180  pango <1.20
- *Gtk3::Label::set_line_wrap_mode=	sub {} unless *Gtk3::Label::set_line_wrap_mode{CODE};	#for gtk2 version <2.9 or perl-Gtk3 <1.131
- *Gtk3::Scale::add_mark=		sub {} unless *Gtk3::Scale::add_mark{CODE};		#for gtk2 version <2.16 or perl-Gtk3 <1.230
- *Gtk3::ImageMenuItem::set_always_show_image= sub {} unless *Gtk3::ImageMenuItem::set_always_show_image{CODE};#for gtk2 version <2.16 or perl-Gtk3 <1.230
- *Gtk3::Widget::set_visible= sub { my ($w,$v)=@_; if ($v) {$w->show} else {$w->hide} } unless *Gtk3::Widget::set_visible{CODE}; #for gtk2 version <2.18 or perl-Gtk3 <1.231
- unless (*Gtk3::Widget::set_tooltip_text{CODE})		#for Gtk3 version <2.12
- {	my $Tooltips=Gtk3::Tooltips->new;
-	*Gtk3::Widget::set_tooltip_text= sub { $Tooltips->set_tip($_[0],$_[1]); };
-	*Gtk3::Widget::set_tooltip_markup= sub { my $markup=$_[1]; $markup=~s/<[^>]*>//g; ;$Tooltips->set_tip($_[0],$markup); }; #remove markup
-	*Gtk3::ToolItem::set_tooltip_text= sub { $_[0]->set_tooltip($Tooltips,$_[1],''); };
-	*Gtk3::ToolItem::set_tooltip_markup= sub { my $markup=$_[1]; $markup=~s/<[^>]*>//g; $_[0]->set_tooltip($Tooltips,$markup,''); };
- }
- my $set_clip_rectangle_orig=\&Gtk3::Gdk::GC::set_clip_rectangle;
- *Gtk3::Gdk::GC::set_clip_rectangle=sub { &$set_clip_rectangle_orig if $_[1]; } if $Gtk3::VERSION <1.102; #work-around $rect can't be undef in old bindings versions
- if (eval($POSIX::VERSION)<1.18) #previously, date strings returned by strftime needed to be decoded by the locale encoding
- {	my ($encoding)= setlocale(LC_TIME)=~m#\.([^@]+)#;
-	$encoding='cp'.$encoding if $^O eq 'MSWin32' && $encoding=~m/^\d+$/;
-	if (!Encode::resolve_alias($encoding)) {warn "Can't find dates encoding used for dates, (LC_TIME=".setlocale(LC_TIME)."), dates may have wrong encoding\n";$encoding=undef}
-	*strftime_utf8= sub { $encoding ? Encode::decode($encoding, &strftime) : &strftime; };
- }
-}
 use List::Util qw/min max sum first/;
 use File::Copy;
 use Fcntl qw/O_NONBLOCK O_WRONLY O_RDWR SEEK_SET/;
@@ -1584,7 +1557,6 @@ if ($FIFOFile)
 }
 
 Glib::set_application_name(PROGRAM_NAME);
-Gtk3::AboutDialog->set_url_hook(sub {openurl($_[1])});
 
 Edittag_mode(@ARGV) if $CmdLine{tagedit};
 

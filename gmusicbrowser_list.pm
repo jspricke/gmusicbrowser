@@ -2532,7 +2532,7 @@ sub Fill
 	return if $self->{valid} && !$opt;
 	if ($self->{mode} eq 'list')
 	{	my $treeview=$self->{view};
-		$treeview->set('show-expanders', ($self->{depth}>0) ) if Gtk3->CHECK_VERSION(2,12,0);
+		$treeview->set('show-expanders', ($self->{depth}>0) );
 		my $store=$treeview->get_model;
 		my $col=$self->{col};
 		my ($renderer)=($treeview->get_columns)[0]->get_cell_renderers;
