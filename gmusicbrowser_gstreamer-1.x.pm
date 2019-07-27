@@ -522,7 +522,7 @@ sub add_visuals
 	$self->{has_visuals}++;
 	$window->set_double_buffered(0);
 	$window->signal_connect(unrealize => sub { my $self=$_[0]{playobject}; $self->remove_visuals($_[0]) if $self; });
-	$window->signal_connect(expose_event => sub
+	$window->signal_connect(draw => sub
 	 {	my $self=$_[0]{playobject};
 		if ($self && $_[0]{visuals_on} && defined $::TogPlay) { $self->{playbin}->expose }
 		else #not connected or stopped -> draw black background

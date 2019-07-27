@@ -1981,7 +1981,7 @@ sub make_transparent
 		unless ($widget->no_window)
 		{	$widget->set_colormap($colormap);
 			$widget->set_app_paintable(1);
-			$widget->signal_connect(expose_event => \&transparent_expose_cb);
+			$widget->signal_connect(draw => \&transparent_expose_cb);
 		}
 		if ($widget->isa('Gtk3::container'))
 		{	$widget->signal_connect(add => sub { make_transparent($_[1]); } );
@@ -3045,7 +3045,7 @@ sub new
 	$self->{state}=$ref->{state} if $ref->{state};
 	if ($opt->{skin})
 	{	my $skin=Skin->new($opt->{skin},$self,$opt);
-		$self->signal_connect(expose_event => \&Skin::draw,$skin);
+		$self->signal_connect(draw => \&Skin::draw,$skin);
 		$self->{skin}=1; # will force a repaint on stock state change
 		$self->set_app_paintable(1); #needed ?
 		if (0 && !$isbutton && $opt->{shape}) #mess up button-press cb TESTME
@@ -3149,7 +3149,7 @@ sub new
 			($minsize)=$lay->get_pixel_size;
 		}
 		$self->set_size_request($minsize,-1);
-		$label->signal_connect(expose_event => \&expose_cb);
+		$label->signal_connect(draw => \&expose_cb);
 		if ($self->{autoscroll})
 		{	$self->{interval} ||=50;	# default to a scroll every 50ms
 			$self->signal_connect(size_allocate => \&restart_scrollcheck);
@@ -3455,7 +3455,7 @@ sub new
 	$self->{top}=   $top  ||= 0;
 	$self->{bottom}=$bottom||=0;
 	$self->set_size_request($left+$right+$hskin->{minwidth},$top+$bottom+$hskin->{minheight});
-	$self->signal_connect(expose_event=> \&expose_cb);
+	$self->signal_connect(draw=> \&expose_cb);
 	return $self;
 }
 
@@ -3609,7 +3609,7 @@ sub new
 	{	$self->{'default'}= ::SearchPicture( $file, $opt->{PATH} );
 	}
 	$self->signal_connect(size_allocate => \&size_allocate_cb);
-	$self->signal_connect(expose_event => \&expose_cb);
+	$self->signal_connect(draw => \&expose_cb);
 	$self->signal_connect(destroy => sub {delete $::ToDo{'8_LoadImg'.$_[0]}});
 	$self->set_size_request($minsize,$minsize) if $minsize;
 	$self->{key}=[];
@@ -3820,7 +3820,7 @@ sub new
 	::Watch($self,'HiddenWidgets',\&UpdateToggleState);
 	if ($opt->{skin})
 	{	my $skin=Skin->new($opt->{skin},$self,$opt);
-		$self->signal_connect(expose_event => \&Skin::draw,$skin);
+		$self->signal_connect(draw => \&Skin::draw,$skin);
 		$self->set_app_paintable(1); #needed ?
 		if (0 && $opt->{shape}) #mess up button-press cb TESTME
 		{	$self->{shape}=1;
@@ -4857,7 +4857,7 @@ sub new
 	my $self= bless Gtk3::DrawingArea->new, $class;
 	$self->add_events([qw/pointer-motion-mask scroll-mask key-press-mask button-press-mask button-release-mask/]);
 	$self->can_focus(::TRUE);
-	$self->signal_connect(expose_event => \&expose_cb);
+	$self->signal_connect(draw => \&expose_cb);
 	$self->signal_connect(size_allocate=> \&resize);
 	$self->signal_connect(scroll_event => \&scroll_cb);
 	$self->signal_connect(key_press_event=> \&key_press_cb);

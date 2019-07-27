@@ -945,7 +945,7 @@ sub new
 	$self->SetRowTip($opt->{rowtip});
 
 	# used to draw text when treeview empty
-	$tv->signal_connect(expose_event=> \&expose_cb);
+	$tv->signal_connect(draw => \&expose_cb);
 	$tv->get_hadjustment->signal_connect_swapped(changed=> sub { my $tv=shift; $tv->queue_draw unless $tv->get_model->iter_n_children },$tv);
 
 	$self->AddColumn($_) for split / +/,$opt->{cols};
@@ -4087,7 +4087,7 @@ sub new
 		$but->can_focus(0);
 		$but->set_relief('none');
 		$but->set_tooltip_text($tip);
-		$but->signal_connect(expose_event => sub #prevent the button from beign drawn, but draw its child
+		$but->signal_connect(draw  => sub #prevent the button from beign drawn, but draw its child
 		{	my ($but,$event)=@_;
 			$but->propagate_expose($but->child,$event);
 			1;
@@ -4105,7 +4105,7 @@ sub new
 	$self->pack_start($entry,1,1,0);
 	$entry->set('has-frame',0);
 	$entry->signal_connect($_ => sub {$_[0]->parent->queue_draw}) for qw/focus_in_event focus_out_event/;
-	$self->signal_connect(expose_event => sub #draw an entry frame inside $self
+	$self->signal_connect(draw  => sub #draw an entry frame inside $self
 		{	my ($self,$event)=@_;
 			my $entry=$self->{entry};
 			if ($entry->state eq 'normal')
@@ -4593,7 +4593,7 @@ sub new
 {	my ($class,$selectsub,$getdatasub,$activatesub,$menupopupsub,$displaykeysub)=@_;
 	my $self = bless Gtk3::DrawingArea->new, $class;
 	$self->can_focus(::TRUE);
-	$self->signal_connect(expose_event	=> \&expose_cb);
+	$self->signal_connect(draw 	=> \&expose_cb);
 	$self->signal_connect(focus_out_event	=> \&focus_change);
 	$self->signal_connect(focus_in_event	=> \&focus_change);
 	$self->signal_connect(configure_event	=> \&configure_cb);
@@ -4967,7 +4967,7 @@ sub new
 	$self->{vscroll}=$vscroll;
 	$vscroll->get_adjustment->signal_connect(value_changed => \&scroll,$self);
 	$self->signal_connect(scroll_event	=> \&scroll_event_cb);
-	$self->signal_connect(expose_event	=> \&expose_cb);
+	$self->signal_connect(draw 	=> \&expose_cb);
 	$self->signal_connect(focus_out_event	=> \&focus_change);
 	$self->signal_connect(focus_in_event	=> \&focus_change);
 	$self->signal_connect(configure_event	=> \&configure_cb);
@@ -5738,7 +5738,7 @@ sub new
 	$self->signal_connect(scroll_event	=> \&scroll_event_cb);
 	$self->signal_connect(key_press_event	=> \&key_press_cb);
 	$self->signal_connect(destroy		=> \&destroy_cb);
-	$view->signal_connect(expose_event	=> \&expose_cb);
+	$view->signal_connect(draw	=> \&expose_cb);
 	$view->signal_connect(focus_in_event	=> sub { my $self=::find_ancestor($_[0],__PACKAGE__); $self->{isearchbox}->parent_has_focus; 0; });
 	$view->signal_connect(focus_in_event	=> \&focus_change);
 	$view->signal_connect(focus_out_event	=> \&focus_change);
@@ -7066,7 +7066,7 @@ sub update
 	$rcstyle->xthickness(1);
 	my @buttons=$hbox->get_children;
 	for my $button (@buttons)
-	{	$button->signal_connect(expose_event	=> \&button_expose_cb);
+	{	$button->signal_connect(draw	=> \&button_expose_cb);
 		$button->signal_connect(clicked		=> \&clicked_cb);
 		$button->signal_connect(button_press_event => \&popup_col_menu);
 		$button->{stylewidget}=$songtree->{stylewidget_header2};

@@ -384,7 +384,7 @@ sub add_visuals
 	$visual_window=shift;
 	$visual_window->signal_connect(unrealize => \&remove_visuals);
 	$visual_window->signal_connect(configure_event => sub {$VSink->expose if $VSink});
-	$visual_window->signal_connect(expose_event => sub
+	$visual_window->signal_connect(draw => sub
 		{	if ($VSink) { $VSink->expose; }
 			else { create_visuals() }
 			1;

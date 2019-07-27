@@ -8642,7 +8642,7 @@ sub new
 	$self->pack_start($_,FALSE,FALSE,2) for $addhbox,$histoAl,$LabEx;
 
 	$histogram->size(HWIDTH,HHEIGHT);
-	$histogram->signal_connect(expose_event => \&histogram_expose_cb);
+	$histogram->signal_connect(draw => \&histogram_expose_cb);
 	$histogram->set_tooltip_text('');
 	$histogram->add_events([qw/enter-notify-mask leave-notify-mask/]);
 	$histogram->signal_connect(enter_notify_event => sub
