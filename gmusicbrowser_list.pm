@@ -348,7 +348,7 @@ sub new
 	my $action_store=Gtk3::ListStore->new(('Glib::String')x3);
 
 	$self->{queuecombo}=
-	my $combo=Gtk3::ComboBox->new($action_store);
+	my $combo=Gtk3::ComboBox->new_with_model($action_store);
 
 	my $renderer=Gtk3::CellRendererPixbuf->new;
 	$combo->pack_start($renderer,FALSE);

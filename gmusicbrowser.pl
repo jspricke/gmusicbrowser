@@ -1354,7 +1354,7 @@ sub LoadIcons
 		next unless $icon_set;
 		$icon_factory->add($stock_id,$icon_set);
 	}
-	$_->queue_draw for Gtk3::Window->list_toplevels;
+	$_->queue_draw for Gtk3::Window::list_toplevels;
 	HasChanged('Icons');
 }
 sub GetIconThemesList
