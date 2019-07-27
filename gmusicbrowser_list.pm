@@ -695,13 +695,13 @@ sub DrawEmpty
 		$layout->set_width( Pango->scale * $width );
 		$layout->set_wrap('word-char');
 		$layout->set_alignment('center');
-		my $style= $self->style;
-		my $font= $style->font_desc;
-		$font->set_size( 2 * $font->get_size );
-		$layout->set_font_description($font);
+		my $style= $self->get_style;
+		#my $font= $style->font_desc;
+		#$font->set_size( 2 * $font->get_size );
+		#$layout->set_font_description($font);
 		$layout->set_markup( "\n".$markup );
-		my $gc=$style->text_aa_gc($self->state);
-		$window->draw_layout($gc, $offset+5,5, $layout);
+		#my $gc=$style->text_aa_gc($self->get_state);
+		#$window->draw_layout($gc, $offset+5,5, $layout);
 	}
 }
 
@@ -912,7 +912,10 @@ sub new
 
 	my $store=SongStore->new; $store->{array}=$self->{array}; $store->{size}=@{$self->{array}};
 	$store->{is_playlist}= $self->{mode} eq 'playlist';
-	my $tv=Gtk3::TreeView->new($store);
+	#my $tv=Gtk3::TreeView->new($store);
+	#my $tv=Gtk3::TreeView->new();
+	my $listmodel = Gtk3::ListStore->new('Glib::String');
+	my $tv=Gtk3::TreeView->new($listmodel);
 	$self->add($tv);
 	$self->{store}=$store;
 
@@ -947,7 +950,7 @@ sub new
 
 	# used to draw text when treeview empty
 	$tv->signal_connect(draw => \&expose_cb);
-	$tv->get_hadjustment->signal_connect_swapped(changed=> sub { my $tv=shift; $tv->queue_draw unless $tv->get_model->iter_n_children },$tv);
+	#$tv->get_hadjustment->signal_connect_swapped(changed=> sub { my $tv=shift; $tv->queue_draw unless $tv->get_model->iter_n_children },$tv);
 
 	$self->AddColumn($_) for split / +/,$opt->{cols};
 	$self->AddColumn('title') unless $tv->get_columns; #make sure there is at least one column
@@ -1243,7 +1246,7 @@ sub SongArray_changed_cb
 	my $tv=$self->get_child;
 	my $store=$tv->get_model;
 	my $treesel=$tv->get_selection;
-	my @selected=map $_->to_string, $treesel->get_selected_rows;
+	my @selected=map $_, $treesel->get_selected_rows;
 	my $updateselection;
 	if ($action eq 'sort')
 	{	my ($sort,$oldarray)=@extra;
@@ -1352,7 +1355,7 @@ sub FollowSong
 			}
 		}
 		$tv->scroll_to_cell($path,undef,TRUE,.5,.5) unless $visible;
-		$tv->set_cursor($path);
+		$tv->set_cursor($path,undef,0);
 	}
 	elsif (defined $::SongID)	#Set the song ID even if the song isn't in the list
 	{ ::HasChangedSelID($self->{group},$::SongID); }
@@ -2164,7 +2167,7 @@ sub new
 	for my $d (0..$self->{depth})
 	{	my ($field)= $self->{type}[$d] =~ m#^([^.]+)#;
 		$self->{field}[$d]=$field;
-		$self->{icons}[$d]= Songs::FilterListProp($field,'icon') ? (Gtk3::IconSize->lookup('menu'))[0] : 0;
+		#$self->{icons}[$d]= Songs::FilterListProp($field,'icon') ? (Gtk3::IconSize->lookup('menu'))[0] : 0;
 	}
 
 	#search box
@@ -3628,7 +3631,7 @@ sub new
 	$self->signal_connect(changed => \&EntryChanged_cb);
 	$self->signal_connect(activate => \&DoFilter);
 	$self->signal_connect(activate => \&CloseSuggestionMenu);
-	$self->signal_connect(key_press_event	=> sub { my ($self,$event)=@_; return 0 unless Gtk3::Gdk->keyval_name($event->keyval) eq 'Escape'; $self->set_text(''); return 1; });
+	$self->signal_connect(key_press_event	=> sub { my ($self,$event)=@_; return 0 unless eval($event->keyval) eq 'Escape'; $self->set_text(''); return 1; });
 	$self->signal_connect_after(activate => sub {::run_command($_[0],$opt->{activate});}) if $opt->{activate};
 	#$self->set_width_chars($opt->{width_chars}) if $opt->{width_chars};
 	unless ($opt->{noselector})
@@ -5647,8 +5650,8 @@ Gtk3::VBox::,
 			param_types   => [Gtk3::Adjustment::,Gtk3::Adjustment::],
 		},
 	},
-	#properties => [Glib::ParamSpec->object ('hadjustment','hadj','', Gtk3::Adjustment::, [qw/readable writable construct/] ),
-	#		Glib::ParamSpec->object ('vadjustment','vadj','', Gtk3::Adjustment::, [qw/readable writable construct/] )],
+	properties => [Glib::ParamSpec->object ('hadjustment','hadj','', Gtk3::Adjustment::, [qw/readable writable construct/] ),
+			Glib::ParamSpec->object ('vadjustment','vadj','', Gtk3::Adjustment::, [qw/readable writable construct/] )],
 	;
 
 
@@ -6005,12 +6008,12 @@ sub update_scrollbar
 	{	my $adj=	$self->{ (qw/hadj vadj/)[$i] };
 		my $pagesize=	$self->{viewwindowsize}[$i] ||0;
 		my $upper=	$self->{viewsize}[$i] ||0;
-		$adj->page_size($pagesize);
-		$adj->upper($upper);
-		$adj->step_increment($pagesize*.125);
-		$adj->page_increment($pagesize*.75);
-		if ($adj->value > $adj->upper-$pagesize) {$adj->set_value($adj->upper-$pagesize);}
-		$adj->changed;
+		#$adj->page_size($pagesize);
+		#$adj->upper($upper);
+		#$adj->step_increment($pagesize*.125);
+		#$adj->page_increment($pagesize*.75);
+		#if ($adj->value > $adj->upper-$pagesize) {$adj->set_value($adj->upper-$pagesize);}
+		#$adj->changed;
 	}
 }
 sub has_scrolled
@@ -6257,35 +6260,36 @@ sub expose_cb
 	my $exp_y2=$expose->{'height'};
 	$exp_x2+=$exp_x1; $exp_y2+=$exp_y1;
 	my $window=$view->get_window;
-	my $style=Gtk3::Rc->get_style_by_paths($self->{stylewidget}->get_settings, '.GtkTreeView', '.GtkTreeView','Gtk3::TreeView')
-		|| Gtk3::Rc->get_style($self->{stylewidget})
-		|| $self->get_style;
-	$style=$style->attach($window);
+	my $style;
+	#my $style=Gtk3::Rc->get_style_by_paths($self->{stylewidget}->get_settings, '.GtkTreeView', '.GtkTreeView','Gtk3::TreeView')
+	#	|| Gtk3::Rc->get_style($self->{stylewidget})
+	#	|| $self->get_style;
+	#$style=$style->attach($window);
 	my $nstate= $self->get_state eq 'insensitive' ? 'insensitive' : 'normal';
 	my $sstate=$view->has_focus ? 'selected' : 'active';
-	$self->{stylewidget}->has_focus($view->has_focus); #themes engine check if the widget has focus
+	#$self->{stylewidget}->grab_focus($view->has_focus); #themes engine check if the widget has focus
 	my $selected=	\$self->{selected};
 	my $list=	$self->{array};
 	my $songcells=	$self->{cells};
 	my $headcells=	$self->{headcells};
 	my $vsizesong=	$self->{vsizesong};
 	#$window->draw_rectangle($style->base_gc($state), 1, $expose->values);
-	my $gc=$style->base_gc($nstate);
-	$window->draw_rectangle($gc, 1, $expose->values);
+	my $gc;
+	#$window->draw_rectangle($gc, 1, $expose->{'x'}, $expose->{'y'}, $expose->{'width'}, $expose->{'height'});
 	unless ($list && @$list)
 	{	$self->DrawEmpty($window);
 		return 1;
 	}
 
-	my $xadj=int $self->{hadj}->get_value;
-	my $yadj=int $self->{vadj}->get_value;
+	my $xadj=0; #int $self->{hadj}->value;
+	my $yadj=0; #int $self->{vadj}->value;
 	my @next;
 	my ($depth,$i)=(0,1);
 	my ($x,$y)=(0-$xadj, 0-$yadj);
 	my $songs_x= $x+$self->{songxoffset};
 	my $songs_width=$self->{songswidth};
 
-	my $maxy=$self->{viewsize}[1]-$yadj;
+	my $maxy=0; #$self->{viewsize}[1]-$yadj;
 	$exp_y2=$maxy if $exp_y2>$maxy; #don't try to draw past the end
 
 	my $heights= $self->{TREE}{height};
@@ -6305,26 +6309,32 @@ sub expose_cb
 		{ my $cell=$headcells->[$depth];
 		  my $expanded=$self->{TREE}{expanded}[$depth][$i];
 		  if ($cell->{head} || $cell->{left} || $cell->{right})
-		  {  my $clip=$expose->intersect( Gtk3::Gdk::Rectangle->new( $x+$cell->{x},$y,$cell->{width},$bh) );
-		     if ($clip)
-		     {	my $start= $self->{TREE}{lastrows}[$depth][$i-1]+1;
-			my $end=   $self->{TREE}{lastrows}[$depth][$i];
-			my %arg=
-			(	self	=> $cell,	widget	=> $self,	style	=> $style,
-				window	=> $window,	clip	=> $clip,	state	=> $nstate,
-				depth	=> $depth,	expanded=> $expanded,
-				vx	=> $xadj+$x+$cell->{x},		vy	=> $yadj+$y,
-				x	=> $x+$cell->{x},		y	=> $y,
-				w	=> $cell->{width},		h	=> $bh,
-				grouptype => $cell->{grouptype},
-				groupsongs=> [@$list[$start..$end]],
-				odd	=> $i%2,	 row=>$i,
-			);
-			my $q= $cell->{draw}(\%arg);
-			my $qid=$depth.'g'.($yadj+$y);
-			delete $self->{queue}{$qid};
-			$self->{queue}{$qid}=$q if $q;
-		      }
+		  {  
+		     my $wa = Cairo::RectangleInt->new();
+		     $wa->{x} = $x+$cell->{x};
+		     $wa->{y} = $y;
+		     $wa->{width} = $cell->{width};
+		     $wa->{height} = $bh;
+		     #my $clip=$expose->intersect($wa);
+		     #if ($clip)
+		     #{	my $start= $self->{TREE}{lastrows}[$depth][$i-1]+1;
+		     #   my $end=   $self->{TREE}{lastrows}[$depth][$i];
+		     #   my %arg=
+		     #   (	self	=> $cell,	widget	=> $self,	style	=> $style,
+		     #   	window	=> $window,	clip	=> $clip,	state	=> $nstate,
+		     #   	depth	=> $depth,	expanded=> $expanded,
+		     #   	vx	=> $xadj+$x+$cell->{x},		vy	=> $yadj+$y,
+		     #   	x	=> $x+$cell->{x},		y	=> $y,
+		     #   	w	=> $cell->{width},		h	=> $bh,
+		     #   	grouptype => $cell->{grouptype},
+		     #   	groupsongs=> [@$list[$start..$end]],
+		     #   	odd	=> $i%2,	 row=>$i,
+		     #   );
+		     #   my $q= $cell->{draw}(\%arg);
+		     #   my $qid=$depth.'g'.($yadj+$y);
+		     #   delete $self->{queue}{$qid};
+		     #   $self->{queue}{$qid}=$q if $q;
+		     # }
 		  }
 		  if ($expanded)
 		  { $y+=$cell->{head};
@@ -6817,6 +6827,7 @@ sub scroll_to_row #FIXME simplify
 	my $vsize=$self->{vsizesong};
 	my $y1=my $y2=$self->row_to_y($row);
 	my $vadj=$self->{vadj};
+	return;
 	if ($not_if_visible) {return if $y1-$vadj->value>0 && $y1+$vsize-$vadj->value-$vadj->page_size<0;}
 	if ($center)
 	{	my $half= $center * $vadj->page_size/2;
@@ -6971,10 +6982,10 @@ sub new
 	$self->signal_connect(button_release_event	=> \&button_release_cb);
 	$self->signal_connect(motion_notify_event	=> \&motion_notify_cb);
 	$self->signal_connect(button_press_event	=> \&button_press_cb);
-	my $rcstyle0=Gtk3::RcStyle->new;
-	$rcstyle0->ythickness(0);
-	$rcstyle0->xthickness(0);
-	$self->modify_style($rcstyle0);
+	#my $rcstyle0=Gtk3::RcStyle->new;
+	#$rcstyle0->ythickness(0);
+	#$rcstyle0->xthickness(0);
+	#$self->modify_style($rcstyle0);
 	return $self;
 }
 
@@ -7065,16 +7076,16 @@ sub update
 		my $expand= $i==@{$songtree->{cells}};
 		$hbox->pack_start($button,$expand,$expand,0);
 	}
-	my $rcstyle=Gtk3::RcStyle->new;
-	$rcstyle->ythickness(1);
-	$rcstyle->xthickness(1);
+	#my $rcstyle=Gtk3::RcStyle->new;
+	#$rcstyle->ythickness(1);
+	#$rcstyle->xthickness(1);
 	my @buttons=$hbox->get_children;
 	for my $button (@buttons)
 	{	$button->signal_connect(draw	=> \&button_expose_cb);
 		$button->signal_connect(clicked		=> \&clicked_cb);
 		$button->signal_connect(button_press_event => \&popup_col_menu);
 		$button->{stylewidget}=$songtree->{stylewidget_header2};
-		$button->modify_style($rcstyle);
+		#$button->modify_style($rcstyle);
 	}
 	$buttons[-1]{stylewidget}=$songtree->{stylewidget_header3};
 	$buttons[0]{stylewidget}=$songtree->{stylewidget_header1};
@@ -7102,16 +7113,17 @@ sub popup_col_menu
 
 sub button_expose_cb
 {	my ($button,$event)=@_;
+	my $style;
 	#my $style=Gtk3::Rc->get_style($button->{stylewidget});
-	my $style=Gtk3::Rc->get_style_by_paths($button->get_settings, '.GtkTreeView.GtkButton', '.GtkTreeView.GtkButton','Gtk3::Button')
-		|| Gtk3::Rc->get_style($button->{stylewidget});
-	$style=$style->attach($button->window);
-	$style->paint_box($button->window,$button->state,'out',$event->area,$button->{stylewidget},'button',$button->allocation->values);
-	$button->propagate_expose($button->get_child,$event) if $button->get_child;
-	if ($button->{colid})
-	{	_create_dragwin($button) unless $button->{dragwin};
-		#$button->{dragwin}->raise;
-	}
+	#my $style=Gtk3::Rc->get_style_by_paths($button->get_settings, '.GtkTreeView.GtkButton', '.GtkTreeView.GtkButton','Gtk3::Button')
+	#	|| Gtk3::Rc->get_style($button->{stylewidget});
+	#$style=$style->attach($button->window);
+	#$style->paint_box($button->window,$button->state,'out',$event->area,$button->{stylewidget},'button',$button->allocation->values);
+	#$button->propagate_expose($button->get_child,$event) if $button->get_child;
+	#if ($button->{colid})
+	#{	_create_dragwin($button) unless $button->{dragwin};
+	#	#$button->{dragwin}->raise;
+	#}
 	1;
 }
 

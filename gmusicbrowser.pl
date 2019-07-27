@@ -459,11 +459,11 @@ BEGIN
   if ($@) { warn "Cairo perl module not found -> transparent windows and other effects won't be available\n"; }
 }
 
-our $Image_ext_re; # = qr/\.(?:jpe?g|png|gif|bmp)$/i;
-BEGIN
-{ my $re=join '|', sort map @{$_->{extensions}}, Gtk3::Gdk::Pixbuf->get_formats;
-  $Image_ext_re=qr/\.(?:$re)$/i;
-}
+our $Image_ext_re = qr/\.(?:jpe?g|png|gif|bmp)$/i;
+#BEGIN
+#{ my $re=join '|', sort map @{$_->{extensions}}, Gtk3::Gdk::Pixbuf->get_formats;
+#  $Image_ext_re=qr/\.(?:$re)$/i;
+#}
 our $EmbImage_ext_re= qr/\.(?:mp3|flac|m4a|m4b|ogg|oga)/i; # warning: doesn't force end of string (with a "$") as sometimes needs to include/extract a :\w+ at the end, so need to use it with /$EmbImage_ext_re$/ or /$EmbImage_ext_re(:\w+)?$/
 
 ##########
@@ -1299,9 +1299,9 @@ sub LoadIcons
 		closedir $dh;
 	}
 
-	$icons{gmusicbrowser}||= PIXPATH.'gmusicbrowser.svg' unless Gtk3::IconTheme->get_default->get_icon_sizes('gmusicbrowser'); #fallback if no icon named 'gmusicbrowser' is installed
+	$icons{gmusicbrowser}||= PIXPATH.'gmusicbrowser.svg'; # unless Gtk3::IconTheme->get_default->get_icon_sizes('gmusicbrowser'); #fallback if no icon named 'gmusicbrowser' is installed
 	if (my $file=delete $icons{gmusicbrowser})
-	{	eval { Gtk3::Window->set_default_icon_from_file($file); };
+	{	#eval { Gtk3::Window->set_default_icon_from_file($file); };
 		warn $@ if $@;
 	}
 	else { Gtk3::Window->set_default_icon_name('gmusicbrowser'); }
@@ -1341,16 +1341,16 @@ sub LoadIcons
 			#keyval   => $Gtk3::Gdk::Keysyms{L},
 			#translation_domain => 'gtk2-perl-example',
 		if (exists $StockLabel{$stock_id}) { $h{label}=$StockLabel{$stock_id}; }
-		Gtk3::Stock->add(\%h) unless Gtk3::Stock->lookup($stock_id);
+		#Gtk3::stock_add(\%h) unless Gtk3::stock_lookup($stock_id);
 
 		my $icon_set;
 		if (my $file=$icons{$stock_id})
 		{	$icon_set= eval {Gtk3::IconSet->new_from_pixbuf( Gtk3::Gdk::Pixbuf->new_from_file($file) )};
 			warn $@ if $@;
 		}
-		elsif (my $fallback=$IconsFallbacks{$stock_id})
-		{	$icon_set= $icon_factory->lookup($fallback) || Gtk3::IconFactory->lookup_default($fallback);
-		}
+		#elsif (my $fallback=$IconsFallbacks{$stock_id})
+		#{	$icon_set= $icon_factory->lookup($fallback) || Gtk3::IconFactory->lookup_default($fallback);
+		#}
 		next unless $icon_set;
 		$icon_factory->add($stock_id,$icon_set);
 	}
@@ -4054,7 +4054,7 @@ sub PopupAA
 			0;
 		};
 
-	my $event=Gtk3->get_current_event;
+	my $event=undef; #Gtk3->get_current_event;
 	my $screen= $widget ? $widget->get_screen : $event ? $event->get_screen : Gtk3::Gdk::Screen->get_default;
 	my $max= .7*$screen->get_height;
 	my $maxwidth=.15*$screen->get_width;
@@ -4626,9 +4626,9 @@ sub set_drag
 {	my ($widget,%params)=@_;
 	if (my $dragsrc=$params{source})
 	{	( my $type, $widget->{dragsrc} )= @$dragsrc;
-		$widget->drag_source_set( ['button1-mask'],['copy','move'],
-			map [ $DRAGTYPES[$_][0], [] , $_ ], $type,
-				keys %{$DRAGTYPES[$type][1]} );
+		#$widget->drag_source_set( ['button1-mask'],['copy','move'],
+		#	map [ $DRAGTYPES[$_][0], [] , $_ ], $type,
+		#		keys %{$DRAGTYPES[$type][1]} );
 		$widget->signal_connect(drag_data_get => \&drag_data_get_cb);
 		$widget->signal_connect(drag_begin => \&drag_begin_cb);
 		$widget->signal_connect(drag_end => \&drag_end_cb);
@@ -4636,8 +4636,8 @@ sub set_drag
 	if (my $dragdest=$params{dest})
 	{	my @types=@$dragdest;
 		$widget->{dragdest}= pop @types;
-		$widget->drag_dest_set(	'all',['copy','move'],
-			map [ $DRAGTYPES[$_][0], ($_==DRAG_ID ? 'same-app' : []) , $_ ], @types );
+		#$widget->drag_dest_set(	'all',['copy','move'],
+		#	map [ $DRAGTYPES[$_][0], ($_==DRAG_ID ? 'same-app' : []) , $_ ], @types );
 		$widget->signal_connect(drag_data_received => \&drag_data_received_cb);
 		$widget->signal_connect(drag_leave => \&drag_leave_cb);
 		$widget->signal_connect(drag_motion => $params{motion}) if $params{motion}; $widget->{drag_motion_cb}=$params{motion};
@@ -7683,10 +7683,10 @@ sub UnWatchFilter
 	}
 	delete $object->{'UpdateFilter_'.$group};
 	my $ref=$FilterWatchers{$group};
-	@$ref=grep $_ ne $object, @$ref;
-	unless (@$ref)
-	{	delete $_->{$group} for \%Filters,\%FilterWatchers;
-	}
+	#@$ref=grep $_ ne $object, @$ref;
+	#unless (@$ref)
+	#{	delete $_->{$group} for \%Filters,\%FilterWatchers;
+	#}
 }
 
 sub Progress
@@ -9749,15 +9749,17 @@ sub make_toolitem
 	my $menu=Gtk3::Menu->new;
 	$item->set_submenu($menu);
 	$titem->set_proxy_menu_item($menu_item_id,$item);
-	my $radioi;
+	my $radioi = [];
 	my $store=$self->get_model;
 	my $iter=$store->get_iter_first;
 	while ($iter)
-	{	my ($name,$val)=$store->get($iter,0,1);
-		$radioi=Gtk3::RadioMenuItem->new_with_label($radioi,$name);
-		$radioi->{value}=$val;
-		$menu->append($radioi);
-		$radioi->signal_connect(activate => sub
+	#{	my ($name,$val)=$store->get($iter,0,1);
+	{	my $name="bla";
+		my $radioi_item=Gtk3::RadioMenuItem->new_with_label($radioi,$name);
+		$radioi = $radioi_item->get_group;
+		#$radioi_item->{value}=$val;
+		$menu->append($radioi_item);
+		$radioi_item->signal_connect(activate => sub
 			{	return if $_[0]->parent->{busy};
 				$self->set_value( $_[0]{value} );
 			});

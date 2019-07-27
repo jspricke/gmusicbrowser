@@ -106,8 +106,8 @@ sub new
 	$self->{$_}=$options->{$_} for qw/site/;
 	delete $self->{site} if $self->{site} && !$sites{$self->{site}}[SITEURL]; #reset selected site if no longer defined
 	$self->{site} ||= 'biography';	# biography is the default site
-	my $fontsize=$self->style->font_desc;
-	$self->{fontsize} = $fontsize->get_size / Pango->scale;
+	#my $fontsize=$self->get_style->font_desc;
+	$self->{fontsize} = 12;
 	$self->{artist_esc} = "";
 	my $statbox=Gtk3::VBox->new(0,0);
 	my $artistpic=Gtk3::HBox->new(0,0);
@@ -265,7 +265,7 @@ sub toggled_cb
 
 sub destroy_event_cb
 {	my $self=shift;
-	$self->cancel;
+	#$self->cancel;
 }
 
 sub cancel

@@ -1172,16 +1172,16 @@ sub NewWidget
 	if (my $cursor=$options{cursor})
 	{	$widget->signal_connect(realize => sub {
 				my ($widget,$cursor)=@_;
-				my $gdkwin= $widget->window;
-				if ($widget->isa('Gtk3::EventBox') && !$widget->get_visible_window)
-				{	# for eventbox using an input-only gdkwindow, $widget->window is actually the parent's gdkwin,
-					# the only way to get to the input-only gdkwin is looking at all the children of its parent :(
-					for my $child ($gdkwin->get_children)
-					{	my $w= Glib::Object->new_from_pointer($child->get_user_data);
-						if ($w && $w==$widget) { $gdkwin=$child; last }
-					}
-				}
-				$gdkwin->set_cursor(Gtk3::Gdk::Cursor->new($cursor));
+				my $gdkwin= $widget->get_window;
+				#if ($widget->isa('Gtk3::EventBox') && !$widget->get_visible_window)
+				#{	# for eventbox using an input-only gdkwindow, $widget->window is actually the parent's gdkwin,
+				#	# the only way to get to the input-only gdkwin is looking at all the children of its parent :(
+				#	for my $child ($gdkwin->get_children)
+				#	{	my $w= Glib::Object->new_from_pointer($child->get_user_data);
+				#		if ($w && $w==$widget) { $gdkwin=$child; last }
+				#	}
+				#}
+				#$gdkwin->set_cursor(Gtk3::Gdk::Cursor->new($cursor));
 			},$cursor);
 	}
 
@@ -1360,7 +1360,7 @@ sub ToggleFullscreen
 
 sub KeyPressed
 {	my ($self,$event,$after)=@_;
-	my $key=Gtk3::Gdk->keyval_name( $event->keyval );
+	my $key=eval( $event->keyval );
 	my $focused=$self->get_toplevel->get_focus;
 	return 0 if !$after && $focused && ($focused->isa('Gtk3::Entry') || $focused->isa('Gtk3::SpinButton'));
 	my $mod;
@@ -1709,7 +1709,7 @@ sub new
 		# ifexist=toggle  => if a window with same uniqueid exist it will be closed
 		# ifexist=present => if a window with same uniqueid exist it presented
 	if (my $mode=$options{ifexist})
-	{	my ($window)=grep $_->isa('Layout::Window') && $_->{uniqueid} eq $uniqueid, Gtk3::Window->list_toplevels;
+	{	my ($window)=grep $_->isa('Layout::Window') && $_->{uniqueid} eq $uniqueid, Gtk3::Window::list_toplevels;
 		if ($window)
 		{	if    ($mode eq 'toggle'  && !$window->{quitonclose})	{ $window->close_window; return }
 			elsif ($mode eq 'replace' && !$window->{quitonclose})	{ $window->close_window; return Layout::Window::new(@original_args,ifexists=>0); } # destroying previous window make it save its settings, then restart new() from the start with new $opt2 but the same original arguments, add ifexists=>0 to make sure it doesn't loop
@@ -2414,9 +2414,9 @@ sub Paned_size_cb
 	my $size2=$self->{size2};
 	if (defined $size1 && defined $size2 && abs($max-$size1-$size2)>5 || $self->{need_resize})
 	{	my $not_enough;
-		if    ($self->child1_resize && !$self->child2_resize)		{ $size1= ::max($max-$size2,0); $not_enough= $size2>$max; }
-		elsif ($self->child2_resize && !$self->child1_resize)		{ $size1= $max if $not_enough= $size1>$max; }
-		else								{ $size1= $max*$size1/($size1+$size2); }
+	  #if    ($self->child1_resize && !$self->child2_resize)		{ $size1= ::max($max-$size2,0); $not_enough= $size2>$max; }
+	  #	elsif ($self->child2_resize && !$self->child1_resize)		{ $size1= $max if $not_enough= $size1>$max; }
+	  #	else								{ $size1= $max*$size1/($size1+$size2); }
 		if ($not_enough)	#don't change the saved value if couldn't restore the size properly
 		{	$self->{need_resize}=1;	#  => will retry in a later size_allocate event unless the position is set manually
 		}
@@ -2514,8 +2514,8 @@ sub new
 	my $self= bless Gtk3::Notebook->new, $class;
 	%$opt=( @DefaultOptions, %$opt );
 	$self->set_scrollable(1);
-	$self->set_tab_hborder(0);
-	$self->set_tab_vborder(0);
+	#$self->set_tab_hborder(0);
+	#$self->set_tab_vborder(0);
 	if (my $tabpos=$opt->{tabpos})
 	{	($tabpos,$self->{angle})= $tabpos=~m/^(left|right|top|bottom)?(90|180|270)?/;
 		$self->set_tab_pos($tabpos) if $tabpos;
@@ -3056,7 +3056,7 @@ sub new
 	{	$self->{stock}=$stock;
 		$self->{size}= $opt->{size};
 		my $img= $self->{img}= Gtk3::Image->new;
-		$img->set_size_request(Gtk3::IconSize->lookup($self->{size})); #so that it always request the same size, even when no icon
+		#$img->set_size_request(Gtk3::IconSize::lookup($self->{size})); #so that it always request the same size, even when no icon
 		if ($opt->{with_text})
 		{	my $hbox=Gtk3::HBox->new(0,2);
 			my $label= $self->{label}= Gtk3::Label->new;
@@ -3512,7 +3512,7 @@ sub set_val
 }
 sub set_max
 {	$_[0]->{max}=$_[1];
-	$_[0]->get_adjustment->upper($_[1]);
+	#$_[0]->get_adjustment->upper($_[1]);
 }
 
 sub button_press_cb
@@ -5290,7 +5290,7 @@ sub set
 	$nb=$::Options{DefaultRating} if !defined $nb || $nb eq '' || $nb==255;
 	$self->set_tooltip_text(_("Song rating")." : $nb %");
 	my $pixbuf= Songs::Stars($nb,$self->{field});
-	$self->{width}= $pixbuf->get_width;
+	#$self->{width}= $pixbuf->get_width;
 	$self->{image}->set_from_pixbuf($pixbuf);
 }
 sub get { shift->{nb}; }
